@@ -1,4 +1,3 @@
-from order import Order
 class Agent:
     def __init__(self):
         self.balance = 10000.0
@@ -8,7 +7,7 @@ class Agent:
         self.baseLatency = 0
      
     # Returns an Order telling what to do, or noOrder if nothing should be done
-    def trade(self) -> Order: # Limit order book as input or trades (market data)
+    def trade(self) -> 'Order': # Limit order book as input or trades (market data)
         raise NotImplementedError #instead of return add to queue
     
     # Returns a latency for an action
