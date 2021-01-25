@@ -46,37 +46,57 @@ class OrderBook:
     def matchOrder(self, order: Order, timestamp: int) -> list:
         trades: list = list()
         if order.buy:
-            while order.amount > 0:
-                other: Order = heapq.heappop(self.sellbook)[2]
-                if other.price >= order.price:
-                    if other.amount > order.amount:
-                        trades.append(Trade(order.agent, other.agent, order, other, other.price, order.symbol, order.amount, timestamp))
-                        other.amount -= order.amount
-                        order.amount = 0
-                        self._addOrder(other)
+            if len(self.sellbook) > 0:
+                while order.amount > 0:
+                    other: Order = heapq.heappop(self.sellbook)[2]
+                    if other.price >= order.price:
+                        if other.amount > order.amount:
+                            trades.append(Trade(order.agent, other.agent, order, other, other.price, order.symbol, order.amount, timestamp))
+                            other.amount -= order.amount
+                            order.amount = 0
+                            self._addOrder(other)
+                        else:
+                            trades.append(Trade(order.agent, other.agent, order, other, other.price, order.symbol, other.amount, timestamp))
+                            order.amount -= other.amount
+                            other.amount = 0
                     else:
-                        trades.append(Trade(order.agent, other.agent, order, other, other.price, order.symbol, other.amount, timestamp))
-                        order.amount -= other.amount
-                        other.amount = 0
-                else:
-                    self._addOrder(order)
-                    break
+                        self._addOrder(order)
+                        break
+            else:
+                self._addOrder(order)
         else:
-            while order.amount > 0:
-                other: Order = heapq.heappop(self.buybook)[2]
-                if other.price <= order.price:
-                    if other.amount > order.amount:
-                        trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, order.amount, order.timestamp))
-                        other.amount -= order.amount
-                        order.amount = 0
-                        self._addOrder(other)
+            if len(self.buybook) > 0:
+                while order.amount > 0:
+                    other: Order = heapq.heappop(self.buybook)[2]
+                    if other.price <= order.price:
+                        if other.amount > order.amount:
+                            trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, order.amount, order.timestamp))
+                            other.amount -= order.amount
+                            order.amount = 0
+                            self._addOrder(other)
+                        else:
+                            trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, other.amount, order.timestamp))
+                            order.amount -= other.amount
+                            other.amount = 0
                     else:
-                        trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, other.amount, order.timestamp))
-                        order.amount -= other.amount
-                        other.amount = 0
-                else:
-                    self._addOrder(order)
-                    break
-                
-        self.simulation.eventQueue.broadcastTradeInfo(trades)
+                        self._addOrder(order)
+                        break
+            else:
+                self._addOrder(order)
+
+        self.simulation.broadcastTradeInfo(trades)
         return trades
+
+    def print(self):
+        print("Sell orders: ")
+        
+        for order in self.sellbook:
+            o: Order = order[2]
+            print("Price: " + str(o.price) + ", Quantity: " + str(o.amount))
+
+        print("Buy orders: ")
+
+        for order in self.buybook:
+            o: Order = order[2]
+            print("Price: " + str(o.price) + ", Quantity: " + str(o.amount))
+

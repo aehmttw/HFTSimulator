@@ -1,6 +1,7 @@
 class Agent:
-    def __init__(self):
+    def __init__(self, name: str):
         self.balance = 10000.0
+        self.name = name
         
         # Symbol -> amount
         self.shares = dict()

@@ -38,6 +38,9 @@ class EventQueue:
     def nextEvent(self) -> Event:
         return heapq.heappop(self.queue)(1)
 
+    def isEmpty(self) -> bool:
+        return len(self.queue) == 0
+
 # enqueue and dequeue events
 # run for certain number of orders, stop and analyze
 # defining event types and what to do -> api calls
