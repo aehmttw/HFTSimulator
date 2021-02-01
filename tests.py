@@ -14,8 +14,8 @@ class Tests(unittest.TestCase):
         book.matchOrder(Order(None, True, "A", 120, 49, 0), 0)
         book.matchOrder(Order(None, True, "A", 200, 45, 0), 0)
 
-        l = book._getBuyList()
-        self.assertEqual(l, [52, 80, 50, 100, 49, 120, 45, 200])
+        self.assertEqual(book._getBuyList(), [52, 80, 50, 100, 49, 120, 45, 200])
+        self.assertEqual(book._getSellList(), [])
 
         #Price: 52, Quantity: 80
         #Price: 50, Quantity: 100
@@ -30,10 +30,27 @@ class Tests(unittest.TestCase):
         book.matchOrder(Order(None, False, "A", 120, 49, 0), 0)
         book.matchOrder(Order(None, False, "A", 200, 45, 0), 0)
 
-        l = book._getSellList()
-        self.assertEqual(l, [44, 200, 49, 120, 50, 100, 52, 80])
+        self.assertEqual(book._getSellList(), [45, 200, 49, 120, 50, 100, 52, 80])
+        self.assertEqual(book._getBuyList(), [])
 
         #Price: 45, Quantity: 200
         #Price: 49, Quantity: 120
         #Price: 50, Quantity: 100
         #Price: 52, Quantity: 80
+
+    def testMatch(self):
+        simulation: Simulation = Simulation()
+        book: OrderBook = OrderBook(simulation)
+        book.matchOrder(Order(None, False, "A", 100, 50, 0), 0)
+        book.matchOrder(Order(None, True, "A", 100, 50, 0), 0)
+        self.assertEqual(book._getBuyList(), [])
+        self.assertEqual(book._getSellList(), [])
+
+    def testPartialMatch(self):
+        # Test: partially matching orders
+        simulation: Simulation = Simulation()
+        book: OrderBook = OrderBook(simulation)
+        book.matchOrder(Order(None, False, "A", 50, 100, 0), 0)
+        book.matchOrder(Order(None, True, "A", 30, 100, 0), 0)
+        self.assertEqual(book._getSellList(), [100, 20])
+        self.assertEqual(book._getBuyList(), [])
