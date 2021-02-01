@@ -87,16 +87,35 @@ class OrderBook:
         self.simulation.broadcastTradeInfo(trades)
         return trades
 
-    def print(self):
-        print("Sell orders: ")
+    def toString(self) -> str:
+        s = "Sell orders: \n"
         
         for order in self.sellbook:
             o: Order = order[2]
-            print("Price: " + str(o.price) + ", Quantity: " + str(o.amount))
+            s += "Price: " + str(o.price) + ", Quantity: " + str(o.amount) + "\n"
 
-        print("Buy orders: ")
+        s += "\nBuy orders: \n"
 
         for order in self.buybook:
             o: Order = order[2]
-            print("Price: " + str(o.price) + ", Quantity: " + str(o.amount))
+            s += "Price: " + str(o.price) + ", Quantity: " + str(o.amount) + "\n"
+        
+        return s
+
+    def getBuyList(self) -> list:
+        l = list()
+        for order in self.buybook:
+            o = order[2]
+            l.append(o.price)
+            l.append(o.amount)
+        return l
+
+    def getSellList(self) -> list:
+        l = list()
+        for order in self.sellbook:
+            o = order[2]
+            l.append(o.price)
+            l.append(o.amount)
+        return l
+
 
