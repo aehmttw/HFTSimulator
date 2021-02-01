@@ -102,7 +102,7 @@ class OrderBook:
         
         return s
 
-    def getBuyList(self) -> list:
+    def _getBuyList(self) -> list:
         l = list()
         for order in self.buybook:
             o = order[2]
@@ -110,7 +110,7 @@ class OrderBook:
             l.append(o.amount)
         return l
 
-    def getSellList(self) -> list:
+    def _getSellList(self) -> list:
         l = list()
         for order in self.sellbook:
             o = order[2]
