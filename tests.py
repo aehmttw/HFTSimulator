@@ -5,7 +5,6 @@ from orderbook import OrderBook
 
 #python -m unittest discover
 class Tests(unittest.TestCase):
-
     def testBuy(self):
         simulation: Simulation = Simulation()
         book: OrderBook = OrderBook(simulation)
@@ -64,7 +63,9 @@ class Tests(unittest.TestCase):
         self.assertEqual(book._getSellList(), [])
         self.assertEqual(book._getBuyList(), [100, 30])
 
-    def testMultiMatch(self):
+    # test no match
+
+    def testPerfectMultiMatch(self):
         simulation: Simulation = Simulation()
         book: OrderBook = OrderBook(simulation)
         book.matchOrder(Order(None, False, "A", 10, 100, 0), 0)
@@ -73,3 +74,35 @@ class Tests(unittest.TestCase):
         book.matchOrder(Order(None, True, "A", 60, 100, 0), 0)
         self.assertEqual(book._getBuyList(), [])
         self.assertEqual(book._getSellList(), [])
+
+    def testPerfectMultiMatchLeftover(self):
+        simulation: Simulation = Simulation()
+        book: OrderBook = OrderBook(simulation)
+        book.matchOrder(Order(None, False, "A", 10, 100, 0), 0)
+        book.matchOrder(Order(None, False, "A", 20, 100, 0), 0)
+        book.matchOrder(Order(None, False, "A", 30, 100, 0), 0)
+        book.matchOrder(Order(None, True, "A", 70, 100, 0), 0)
+        self.assertEqual(book._getBuyList(), [100, 10])
+        self.assertEqual(book._getSellList(), [])
+
+    def testPerfectMultiMatchLeftover2(self):
+        simulation: Simulation = Simulation()
+        book: OrderBook = OrderBook(simulation)
+        book.matchOrder(Order(None, False, "A", 10, 100, 0), 0)
+        book.matchOrder(Order(None, False, "A", 20, 100, 0), 0)
+        book.matchOrder(Order(None, False, "A", 30, 100, 0), 0)
+        book.matchOrder(Order(None, True, "A", 50, 100, 0), 0)
+        self.assertEqual(book._getBuyList(), [])
+        self.assertEqual(book._getSellList(), [100, 10])
+
+    def testMultiPriceMatch(self):
+        simulation: Simulation = Simulation()
+        book: OrderBook = OrderBook(simulation)
+        book.matchOrder(Order(None, False, "A", 100, 10, 0), 0)
+        book.matchOrder(Order(None, False, "A", 100, 20, 0), 0)
+        book.matchOrder(Order(None, False, "A", 100, 30, 0), 0)
+        book.matchOrder(Order(None, True, "A", 100, 60, 0), 0)
+        self.assertEqual(book._getBuyList(), [])
+        self.assertEqual(book._getSellList(), [20, 100, 30, 100])
+
+    #make more of these
