@@ -46,8 +46,8 @@ class OrderBook:
     def matchOrder(self, order: Order, timestamp: int) -> list:
         trades: list = list()
         if order.buy:
-            if len(self.sellbook) > 0:
-                while order.amount > 0:
+            while order.amount > 0:
+                if len(self.sellbook) > 0:
                     other: Order = heapq.heappop(self.sellbook)[2]
                     if other.price >= order.price:
                         if other.amount > order.amount:
@@ -62,11 +62,12 @@ class OrderBook:
                     else:
                         self._addOrder(order)
                         break
-            else:
-                self._addOrder(order)
+                else:
+                    self._addOrder(order)
+                    break
         else:
-            if len(self.buybook) > 0:
-                while order.amount > 0:
+            while order.amount > 0:
+                if len(self.buybook) > 0:
                     other: Order = heapq.heappop(self.buybook)[2]
                     if other.price <= order.price:
                         if other.amount > order.amount:
@@ -81,8 +82,9 @@ class OrderBook:
                     else:
                         self._addOrder(order)
                         break
-            else:
-                self._addOrder(order)
+                else:
+                    self._addOrder(order)
+                    break
 
         self.simulation.broadcastTradeInfo(trades)
         return trades

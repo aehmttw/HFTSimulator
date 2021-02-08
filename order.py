@@ -16,9 +16,26 @@ class Order:
     
     # A cancel order uses the same orderID as the order it is canceling
 
-def makeCancelOrder(agent: 'Agent', cancelID: uuid, timestamp: int) -> type(Order):
+    def __eq__(self, other):
+        return self.orderID == other.orderID
+
+    def __ne__(self, other):
+        return self.orderID != other.orderID
+
+    def __lt__(self, other):
+        return self.orderID < other.orderID
+
+    def __le__(self, other):
+        return self.orderID <= other.orderID
+
+    def __gt__(self, other):
+        return self.orderID > other.orderID
+
+    def __ge__(self, other):
+        return self.orderID >= other.orderID
+
+def makeCancelOrder(agent: 'Agent', cancelID: uuid, timestamp: int) -> Order:
     o = Order(agent, False, "", 0, 0, timestamp)
     o.cancel = True
     o.orderID = cancelID
     return o
-        

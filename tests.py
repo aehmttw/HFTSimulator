@@ -54,3 +54,22 @@ class Tests(unittest.TestCase):
         book.matchOrder(Order(None, True, "A", 30, 100, 0), 0)
         self.assertEqual(book._getSellList(), [100, 20])
         self.assertEqual(book._getBuyList(), [])
+
+    def testOverflowMatch(self):
+        # Test: partially matching orders
+        simulation: Simulation = Simulation()
+        book: OrderBook = OrderBook(simulation)
+        book.matchOrder(Order(None, False, "A", 50, 100, 0), 0)
+        book.matchOrder(Order(None, True, "A", 80, 100, 0), 0)
+        self.assertEqual(book._getSellList(), [])
+        self.assertEqual(book._getBuyList(), [100, 30])
+
+    def testMultiMatch(self):
+        simulation: Simulation = Simulation()
+        book: OrderBook = OrderBook(simulation)
+        book.matchOrder(Order(None, False, "A", 10, 100, 0), 0)
+        book.matchOrder(Order(None, False, "A", 20, 100, 0), 0)
+        book.matchOrder(Order(None, False, "A", 30, 100, 0), 0)
+        book.matchOrder(Order(None, True, "A", 60, 100, 0), 0)
+        self.assertEqual(book._getBuyList(), [])
+        self.assertEqual(book._getSellList(), [])
