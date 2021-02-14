@@ -112,16 +112,16 @@ class OrderBook:
         l = list()
         for order in self.buybook:
             o = order[2]
-            l.append(o.price)
             l.append(o.amount)
+            l.append(o.price)
         return l
 
     def _getSellList(self) -> list:
         l = list()
         for order in self.sellbook:
             o = order[2]
-            l.append(o.price)
             l.append(o.amount)
+            l.append(o.price)
         return l
 
 
