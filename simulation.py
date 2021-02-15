@@ -5,6 +5,10 @@ class Simulation:
     def __init__(self):
         self.eventQueue = EventQueue(self)
         self.agents = list()
+        self.orderbooks = dict()
+        self.orderbooks["A"] = OrderBook(self)
+        self.agents.append(AgentFixedPrice("1", 100, "A", 1, True))
+        self.agents.append(AgentFixedPrice("2", 100, "A", 1, False))
 
     def broadcastTradeInfo(self, trades):
         for trade in trades:

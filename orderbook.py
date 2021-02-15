@@ -2,6 +2,9 @@ import heapq
 from order import Order
 from trade import Trade
 class OrderBook:
+
+    # Every agent will have their own order books, representing only the data they have received
+    # These separate order books, unlike the main ones, have simulation set to None
     def __init__(self, simulation: 'Simulation'):
         # Stores sell side of order book as tuples with price, timestamp, and Order.
         # The lowest sell order is popped first. In the event of a tie, the oldest one should pop first.
@@ -36,7 +39,9 @@ class OrderBook:
         else:
             trades = self.matchOrder(order, timestamp)
             for trade in trades:
-                trade.process() 
+                if not (self.simulation is None):
+                    trade.process() 
+
                 self.trades.append(trade)
                 
     # read config file to define latency parameters
@@ -90,7 +95,9 @@ class OrderBook:
                     self._addOrder(order)
                     break
 
-        self.simulation.broadcastTradeInfo(trades)
+        if not (self.simulation is None):
+            self.simulation.broadcastTradeInfo(trades)
+ 
         return trades
 
     def toString(self) -> str:

@@ -11,7 +11,7 @@ class Event:
        pass
 
 class EventOrder(Event):
-    def __init__(self, time: float, order: Order, orderBook: OrderBook):
+    def __init__(self, time: float, order: 'Order', orderBook: 'OrderBook'):
         super.__init__(self, time)
         self.order = order
         self.orderBook = orderBook
@@ -19,7 +19,7 @@ class EventOrder(Event):
     def run(self):
         self.orderBook.input(self.order, self.time)
 class EventMarketData(Event):
-    def __init__(self, time: float, trade: Trade, target: Agent):
+    def __init__(self, time: float, trade: 'Trade', target: 'Agent'):
         super.__init__(self, time)
         self.trade = trade
         self.target = target
@@ -32,7 +32,7 @@ class EventQueue:
         self.simulation = simulation
         self.queue = list()
 
-    def queueEvent(self, e: Event):
+    def queueEvent(self, e: 'Event'):
         heapq.heappush(self.queue, (e.time, e))
 
     def nextEvent(self) -> Event:

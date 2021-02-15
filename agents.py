@@ -1,14 +1,24 @@
+from orderbook import *
+from order import *
+from events import *
+import random
 class Agent:
-    def __init__(self, name: str):
+    def __init__(self, name: str, simulation: 'Simulation'):
         self.balance = 10000.0
         self.name = name
+        self.simulation = simulation
         
         # Symbol -> amount
         self.shares = dict()
         self.baseLatency = 0
+
+        self.orderBooks = dict()
+        self.sharePrices = dict()
      
-    def inputData(self, trade: 'Trade'):
-        raise NotImplementedError #add to own record of data
+    def inputData(self, trade: 'Trade', timestamp: int):
+        self.sharePrices[trade.symbol] = trade.price
+        # How to handle un-matched trades?
+        
 
     # Returns an Order telling what to do, or noOrder if nothing should be done
     # Make sure to set the order timestamp based on the latency
@@ -20,6 +30,34 @@ class Agent:
     # Maybe add other latencies to separate places too, depending on how this will be implemented
     def getLatency(self) -> int:
         raise NotImplementedError
+
+# market maker - could schedule events at for self
+# maybe plot event queue size over time to see how long to simulate for, to see practicality
+
+class AgentFixedPrice(Agent):
+    def __init__(self, name: str, price: float, symbol: list, quantity: int, buy: bool):
+        super.__init__(self, name)
+        self.balance = 10000.0
+        self.price = price
+        self.symbols = symbol
+        self.quantity = quantity
+        self.buy = buy
+
+    def inputData(self, trade: 'Trade', timestamp: int):
+        super.inputData(trade)
+        self.trade(self, trade.symbol, timestamp)
+
+    def getLatency(self) -> int:
+        return int(random.random * 100)
+
+    def trade(self, symbol: str, timestamp: int):
+        order = Order(self.buy, symbol, self.quantity, self.price, timestamp)
+        self.simulation.pushEvent(EventOrder(timestamp + self.getLatency(), self.simulation.orderbooks[symbol]))
+
+
+
+
+
 
 # todo - add multiple agent types
 
