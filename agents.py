@@ -10,6 +10,8 @@ class Agent:
         
         # Symbol -> amount
         self.shares = dict()
+        self.shares["A"] = 100
+
         self.baseLatency = 0
 
         self.orderBooks = dict()
@@ -35,8 +37,8 @@ class Agent:
 # maybe plot event queue size over time to see how long to simulate for, to see practicality
 
 class AgentFixedPrice(Agent):
-    def __init__(self, name: str, price: float, symbol: list, quantity: int, buy: bool):
-        super.__init__(self, name)
+    def __init__(self, name: str, simulation: 'simulation', price: float, symbol: list, quantity: int, buy: bool):
+        super().__init__(name, simulation)
         self.balance = 10000.0
         self.price = price
         self.symbols = symbol
@@ -44,15 +46,15 @@ class AgentFixedPrice(Agent):
         self.buy = buy
 
     def inputData(self, trade: 'Trade', timestamp: int):
-        super.inputData(trade)
-        self.trade(self, trade.symbol, timestamp)
+        super().inputData(trade, timestamp)
+        self.trade(trade.symbol, timestamp)
 
     def getLatency(self) -> int:
-        return int(random.random * 100)
+        return int(random.random() * 100)
 
     def trade(self, symbol: str, timestamp: int):
-        order = Order(self.buy, symbol, self.quantity, self.price, timestamp)
-        self.simulation.pushEvent(EventOrder(timestamp + self.getLatency(), self.simulation.orderbooks[symbol]))
+        order = Order(self, self.buy, symbol, self.quantity, self.price, timestamp)
+        self.simulation.pushEvent(EventOrder(timestamp + self.getLatency(), order, self.simulation.orderbooks[symbol]))
 
 
 

@@ -10,9 +10,27 @@ class Event:
     def run(self):
        pass
 
+    def __eq__(self, other):
+        return self.time == other.time
+
+    def __ne__(self, other):
+        return self.time != other.time
+
+    def __lt__(self, other):
+        return self.time < other.time
+
+    def __le__(self, other):
+        return self.time <= other.time
+
+    def __gt__(self, other):
+        return self.time > other.time
+
+    def __ge__(self, other):
+        return self.time >= other.time
+
 class EventOrder(Event):
     def __init__(self, time: float, order: 'Order', orderBook: 'OrderBook'):
-        super.__init__(self, time)
+        super().__init__(time)
         self.order = order
         self.orderBook = orderBook
     
@@ -20,12 +38,12 @@ class EventOrder(Event):
         self.orderBook.input(self.order, self.time)
 class EventMarketData(Event):
     def __init__(self, time: float, trade: 'Trade', target: 'Agent'):
-        super.__init__(self, time)
+        super().__init__(time)
         self.trade = trade
         self.target = target
     
     def run(self):
-        self.target.inputData(self.trade)
+        self.target.inputData(self.trade, self.trade.timestamp)
 
 class EventQueue:
     def __init__(self, simulation: 'Simulation'):
@@ -36,7 +54,7 @@ class EventQueue:
         heapq.heappush(self.queue, (e.time, e))
 
     def nextEvent(self) -> Event:
-        return heapq.heappop(self.queue)(1)
+        return heapq.heappop(self.queue)[1]
 
     def isEmpty(self) -> bool:
         return len(self.queue) == 0
