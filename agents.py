@@ -46,11 +46,13 @@ class AgentFixedPrice(Agent):
         self.buy = buy
 
     def inputData(self, trade: 'Trade', timestamp: int):
+        print(timestamp)
         super().inputData(trade, timestamp)
         self.trade(trade.symbol, timestamp)
 
     def getLatency(self) -> int:
         return int(random.random() * 100)
+        #return 1
 
     def trade(self, symbol: str, timestamp: int):
         order = Order(self, self.buy, symbol, self.quantity, self.price, timestamp)

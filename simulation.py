@@ -24,14 +24,19 @@ class Simulation:
 
     def run(self):
         t = time.time()
+        events = 0
         while (not self.eventQueue.isEmpty()) and time.time() <= t + 10:
+            events += 1
             event = self.eventQueue.nextEvent()
+            print(event.toString())
             event.run()
+
+            if events > 20:
+                break
 
             # test to make sure this is working correctly
             # algorithms and graphing, plots at end of simulation (what are we interested in?) - things like price, volatility and relation to hypothesis
             # first blog post - talk about design, simulator
-        print(self.tradesCount)
 
 
 

@@ -4,11 +4,14 @@ from orderbook import *
 from agents import *
 
 class Event:
-    def __init__(self, time: float):
+    def __init__(self, time: int):
        self.time = time
     
     def run(self):
        pass
+
+    def toString(self) -> str:
+        return ""
 
     def __eq__(self, other):
         return self.time == other.time
@@ -29,21 +32,31 @@ class Event:
         return self.time >= other.time
 
 class EventOrder(Event):
-    def __init__(self, time: float, order: 'Order', orderBook: 'OrderBook'):
+    def __init__(self, time: int, order: 'Order', orderBook: 'OrderBook'):
         super().__init__(time)
         self.order = order
         self.orderBook = orderBook
     
     def run(self):
         self.orderBook.input(self.order, self.time)
+
+    def toString(self):
+        return "Order event: time = " + str(self.time) + " from " + self.order.agent.name + "; id " + str(self.order.orderID)
+
 class EventMarketData(Event):
-    def __init__(self, time: float, trade: 'Trade', target: 'Agent'):
+    def __init__(self, time: int, trade: 'Trade', target: 'Agent'):
         super().__init__(time)
         self.trade = trade
         self.target = target
     
     def run(self):
-        self.target.inputData(self.trade, self.trade.timestamp)
+        self.target.inputData(self.trade, self.time)
+
+    def toString(self):
+        if self.trade.buyOrder is not None and self.trade.sellOrder is not None:
+            return "Market data event: time = " + str(self.time) + " for " + self.target.name + "; ids " + str(self.trade.buyOrder.orderID) + ", " + str(self.trade.sellOrder.orderID) 
+        else:
+            return "Market data event: time = " + str(self.time) + " for " + self.target.name
 
 class EventQueue:
     def __init__(self, simulation: 'Simulation'):
@@ -51,10 +64,10 @@ class EventQueue:
         self.queue = list()
 
     def queueEvent(self, e: 'Event'):
-        heapq.heappush(self.queue, (e.time, e))
+        heapq.heappush(self.queue, e)
 
     def nextEvent(self) -> Event:
-        return heapq.heappop(self.queue)[1]
+        return heapq.heappop(self.queue)
 
     def isEmpty(self) -> bool:
         return len(self.queue) == 0

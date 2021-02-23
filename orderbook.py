@@ -78,13 +78,13 @@ class OrderBook:
                     other: Order = heapq.heappop(self.buybook)[2]
                     if other.price >= order.price:
                         if other.amount > order.amount:
-                            trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, order.amount, order.timestamp))
+                            trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, order.amount, timestamp))
                             other.amount -= order.amount
                             order.amount = 0
                             self._addOrder(other)
                             break
                         else:
-                            trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, other.amount, order.timestamp))
+                            trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, other.amount, timestamp))
                             order.amount -= other.amount
                             other.amount = 0
                     else:
