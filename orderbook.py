@@ -15,6 +15,7 @@ class OrderBook:
         self.buybook = []
 
         self.trades = []
+        self.datapoints = []
 
         self.simulation = simulation
 
@@ -88,6 +89,7 @@ class OrderBook:
                     break
 
         if not (self.simulation is None):
+            self.datapoints.append(DataPoint(self, timestamp))
             self.simulation.broadcastTradeInfo(trades)
  
         return trades
@@ -123,4 +125,23 @@ class OrderBook:
             l.append(o.price)
         return l
 
+class DataPoint:
+    def __init__(self, orderBook: OrderBook, timestamp: int):
+        self.price = orderBook.trades[len(orderBook.trades) - 1].price
+        self.timestamp = timestamp
+        self.bookSize = len(orderBook.sellbook) + len(orderBook.buybook)
 
+        s = heapq.heappop(orderBook.sellbook)
+        heapq.heappush(orderBook.sellbook, s)
+
+        b = heapq.heappop(orderBook.buybook)
+        heapq.heappush(orderBook.buybook, b)
+
+        self.gap = -(s[0] + b[0])
+    
+    def toString(self) -> str:
+        return str(self.timestamp) + " data point: price = " + str(self.price) + ", book size = " + str(self.bookSize) + ", gap = " + str(self.gap)
+
+        
+    
+    
