@@ -28,7 +28,7 @@ class Simulation:
         while (not self.eventQueue.isEmpty()) and time.time() <= t + 10:
             events += 1
             event = self.eventQueue.nextEvent()
-            print(event.toString())
+            #print(event.toString())
             event.run()
 
             if events > 20:

@@ -43,6 +43,24 @@ class OrderBook:
                     trade.process() 
 
                 self.trades.append(trade)
+    
+    def inputOrder(self, order1: Order, order2: Order, timestamp: int, trades) -> bool:
+        if order2.price <= order1.price:
+            if order2.amount > order1.amount:
+                trades.append(Trade(order1.agent, order2.agent, order1, order2, order2.price, order1.symbol, order1.amount, timestamp))
+                order2.amount -= order1.amount
+                order1.amount = 0
+                self._addOrder(order2)
+                return True
+            else:
+                trades.append(Trade(order1.agent, order2.agent, order1, order2, order2.price, order1.symbol, order2.amount, timestamp))
+                order1.amount -= order2.amount
+                order2.amount = 0
+                return False
+        else:
+            self._addOrder(order2)
+            self._addOrder(order1)
+            return True   
                 
     # read config file to define latency parameters
 
@@ -54,20 +72,7 @@ class OrderBook:
             while order.amount > 0: 
                 if len(self.sellbook) > 0:
                     other: Order = heapq.heappop(self.sellbook)[2]
-                    if other.price <= order.price:
-                        if other.amount > order.amount:
-                            trades.append(Trade(order.agent, other.agent, order, other, other.price, order.symbol, order.amount, timestamp))
-                            other.amount -= order.amount
-                            order.amount = 0
-                            self._addOrder(other)
-                            break
-                        else:
-                            trades.append(Trade(order.agent, other.agent, order, other, other.price, order.symbol, other.amount, timestamp))
-                            order.amount -= other.amount
-                            other.amount = 0
-                    else:
-                        self._addOrder(other)
-                        self._addOrder(order)
+                    if self.inputOrder(order, other, timestamp, trades):
                         break
                 else:
                     self._addOrder(order)
@@ -76,20 +81,7 @@ class OrderBook:
             while order.amount > 0:
                 if len(self.buybook) > 0:
                     other: Order = heapq.heappop(self.buybook)[2]
-                    if other.price >= order.price:
-                        if other.amount > order.amount:
-                            trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, order.amount, timestamp))
-                            other.amount -= order.amount
-                            order.amount = 0
-                            self._addOrder(other)
-                            break
-                        else:
-                            trades.append(Trade(other.agent, order.agent, other, order, other.price, order.symbol, other.amount, timestamp))
-                            order.amount -= other.amount
-                            other.amount = 0
-                    else:
-                        self._addOrder(order)
-                        self._addOrder(other)
+                    if self.inputOrder(other, order, timestamp, trades):
                         break
                 else:
                     self._addOrder(order)
