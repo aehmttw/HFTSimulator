@@ -8,8 +8,10 @@ class Simulation:
         self.agents = list()
         self.orderbooks = dict()
         self.orderbooks["A"] = OrderBook(self)
-        self.agents.append(AgentFixedPrice("1", self, 100, ["A"], 1, True))
+        self.agents.append(AgentFixedPrice("1", self, 90, ["A"], 1, True))
         self.agents.append(AgentFixedPrice("2", self, 100, ["A"], 1, False))
+        self.agents.append(AgentFixedPrice("3", self, 100, ["A"], 1, True))
+        self.agents.append(AgentFixedPrice("4", self, 110, ["A"], 1, False))
         self.tradesCount = 0
         self.broadcastTradeInfo([Trade(None, None, None, None, 0, "A", 0, 0)])
 
@@ -31,7 +33,7 @@ class Simulation:
             #print(event.toString())
             event.run()
 
-            if events > 20:
+            if events > 200:
                 break
 
             # test to make sure this is working correctly

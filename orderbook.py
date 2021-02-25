@@ -1,4 +1,5 @@
 import heapq
+import matplotlib.pyplot as plot
 from order import Order
 from trade import Trade
 class OrderBook:
@@ -16,6 +17,7 @@ class OrderBook:
 
         self.trades = []
         self.datapoints = []
+        self.price = 0
 
         self.simulation = simulation
 
@@ -42,8 +44,11 @@ class OrderBook:
             for trade in trades:
                 if not (self.simulation is None):
                     trade.process() 
+                    self.price = trade.price
 
                 self.trades.append(trade)
+            self.datapoints.append(DataPoint(self, timestamp))
+
     
     def inputOrder(self, order1: Order, order2: Order, timestamp: int, trades) -> bool:
         if order2.price <= order1.price:
@@ -89,7 +94,6 @@ class OrderBook:
                     break
 
         if not (self.simulation is None):
-            self.datapoints.append(DataPoint(self, timestamp))
             self.simulation.broadcastTradeInfo(trades)
  
         return trades
@@ -125,19 +129,61 @@ class OrderBook:
             l.append(o.price)
         return l
 
+    def plotPrice(self):
+        times = list()
+        data = list()
+
+        for datapoint in self.datapoints:
+            times.append(datapoint.timestamp)
+            data.append(datapoint.price)
+
+        plot.figure()
+        plot.xlabel("time")
+        plot.ylabel("price")
+        plot.plot(times, data)   
+
+    def plotBookSize(self):
+        times = list()
+        data = list()
+
+        for datapoint in self.datapoints:
+            times.append(datapoint.timestamp)
+            data.append(datapoint.bookSize)
+
+        plot.figure()
+        plot.xlabel("time")
+        plot.ylabel("book size")
+        plot.plot(times, data)   
+
+    def plotGap(self):
+        times = list()
+        data = list()
+
+        for datapoint in self.datapoints:
+            times.append(datapoint.timestamp)
+            data.append(datapoint.gap)
+
+        plot.figure()
+        plot.xlabel("time")
+        plot.ylabel("gap")
+        plot.plot(times, data)   
+
 class DataPoint:
     def __init__(self, orderBook: OrderBook, timestamp: int):
-        self.price = orderBook.trades[len(orderBook.trades) - 1].price
+        self.price = orderBook.price
         self.timestamp = timestamp
         self.bookSize = len(orderBook.sellbook) + len(orderBook.buybook)
 
-        s = heapq.heappop(orderBook.sellbook)
-        heapq.heappush(orderBook.sellbook, s)
+        if len(orderBook.sellbook) == 0 or len(orderBook.buybook) == 0:
+            self.gap = -1
+        else:
+            s = heapq.heappop(orderBook.sellbook)
+            heapq.heappush(orderBook.sellbook, s)
 
-        b = heapq.heappop(orderBook.buybook)
-        heapq.heappush(orderBook.buybook, b)
+            b = heapq.heappop(orderBook.buybook)
+            heapq.heappush(orderBook.buybook, b)
 
-        self.gap = -(s[0] + b[0])
+            self.gap = (s[0] + b[0])
     
     def toString(self) -> str:
         return str(self.timestamp) + " data point: price = " + str(self.price) + ", book size = " + str(self.bookSize) + ", gap = " + str(self.gap)
