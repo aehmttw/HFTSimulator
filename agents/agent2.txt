@@ -1,0 +1,6 @@
+testagent2
+10000
+basic:
+A=10
+fixedprice:100,1,False
+linear:0,100
