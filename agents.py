@@ -2,6 +2,7 @@ from orderbook import *
 from order import *
 from events import *
 import random
+import json
 class Agent:
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict):
         self.balance = balance

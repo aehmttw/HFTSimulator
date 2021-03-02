@@ -2,6 +2,7 @@ import heapq
 import matplotlib.pyplot as plot
 from order import Order
 from trade import Trade
+import numpy
 class OrderBook:
 
     # Every agent will have their own order books, representing only the data they have received
@@ -166,6 +167,33 @@ class OrderBook:
         plot.figure()
         plot.xlabel("time")
         plot.ylabel("gap")
+        plot.plot(times, data)   
+
+    def plotVolatility(self, time: int):
+        times = list()
+        data = list()
+        
+        index: int = 0
+        for datapoint in self.datapoints:
+            times.append(datapoint.timestamp)
+            price = list()
+
+            index2: int = index
+            while index2 >= 0:
+                time2: int = self.datapoints[index2].timestamp
+
+                if time2 + time >= datapoint.timestamp:
+                    price.append(self.datapoints[index2].price)
+                    index2 -= 1
+                else:
+                    break
+            
+            data.append(numpy.std(price))
+            index += 1
+
+        plot.figure()
+        plot.xlabel("time")
+        plot.ylabel("volatility")
         plot.plot(times, data)   
 
 class DataPoint:

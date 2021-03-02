@@ -14,6 +14,10 @@ class Simulation:
         self.agents.append(Agent.fromFile("agents/agent3.txt", self))
         self.agents.append(Agent.fromFile("agents/agent4.txt", self))
 
+        # look at algorithms, see what happens in simulation, read more later
+        # normal distribution, mean = distance from exchange, variance = quality of network
+        # volatility metric?
+
         self.tradesCount = 0
         self.broadcastTradeInfo([Trade(None, None, None, None, 0, "A", 0, 0)])
 
@@ -32,13 +36,10 @@ class Simulation:
         while (not self.eventQueue.isEmpty()) and time.time() <= t + 10:
             events += 1
             event = self.eventQueue.nextEvent()
-            print(event.toString())
+            #print(event.toString())
             event.run()
-
-            if events > 200:
-                break
         
-        print(self.orderbooks["A"].toString())
+        #print(self.orderbooks["A"].toString())
 
             # test to make sure this is working correctly
             # algorithms and graphing, plots at end of simulation (what are we interested in?) - things like price, volatility and relation to hypothesis
