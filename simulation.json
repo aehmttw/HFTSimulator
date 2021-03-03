@@ -1,0 +1,114 @@
+{
+    "symbols": ["A"],
+
+    "agents":
+    [ 
+        {
+            "name": "testagent1",
+            "balance": 10000,
+            "type": "basic",
+            "typeargs":
+            {
+
+            },
+            "shares": 
+            {
+                "A": 100
+            },
+            "algorithm": "fixedprice",
+            "algorithmargs": 
+            {
+                "price": 100,
+                "quantity": 1,
+                "buy": true
+            },
+            "latency": "linear",
+            "latencyargs":
+            {
+                "min": 0,
+                "max": 100
+            }
+        },
+
+        {
+            "name": "testagent2",
+            "balance": 10000,
+            "type": "basic",
+            "typeargs":
+            {
+
+            },
+            "shares": 
+            {
+                "A": 100
+            },
+            "algorithm": "fixedprice",
+            "algorithmargs": 
+            {
+                "price": 100,
+                "quantity": 1,
+                "buy": false
+            },
+            "latency": "linear",
+            "latencyargs":
+            {
+                "min": 0,
+                "max": 100
+            }
+        },
+
+        {
+            "name": "testagent3",
+            "balance": 10000,
+            "type": "basic",
+            "typeargs":
+            {
+
+            },
+            "shares": 
+            {
+                "A": 100
+            },
+            "algorithm": "fixedprice",
+            "algorithmargs": 
+            {
+                "price": 99,
+                "quantity": 1,
+                "buy": true
+            },
+            "latency": "linear",
+            "latencyargs":
+            {
+                "min": 0,
+                "max": 100
+            }
+        },
+
+        {
+            "name": "testagent4",
+            "balance": 10000,
+            "type": "basic",
+            "typeargs":
+            {
+
+            },
+            "shares": 
+            {
+                "A": 100
+            },
+            "algorithm": "fixedprice",
+            "algorithmargs": 
+            {
+                "price": 101,
+                "quantity": 1,
+                "buy": false
+            },
+            "latency": "linear",
+            "latencyargs":
+            {
+                "min": 0,
+                "max": 100
+            }
+        }
+    ]
+}

@@ -18,27 +18,21 @@ class Agent:
         self.algorithm = None
         self.latencyFunction = None
 
-    def fromFile(file: str, simulation: 'Simulation'):
-        with open(file) as f:
-            sections = f.read().splitlines()
-
-        name: str = sections[0]
-        balance: float = float(sections[1])
+    def fromJson(j, simulation: 'Simulation') -> 'Agent':
+        name: str = j["name"]
+        balance: float = j["balance"]
         
-        type: str = sections[2].split(":")[0]
-        args: str = sections[2].split(":")[1]
+        type: str = j["type"]
+        args: dict = j["typeargs"]
 
-        shares = dict()
-        for s in sections[3].split(","):
-            s1 = s.split("=")
-            shares[s1[0]] = int(s1[1])
+        shares: dict = j["shares"]
 
         agent: Agent = None
         if type == "basic":
             agent = BasicAgent(name, simulation, balance, shares, args)
 
-        algtype: str = sections[4].split(":")[0]
-        algargs: str = sections[4].split(":")[1]
+        algtype: str = j["algorithm"]
+        algargs: dict = j["algorithmargs"]
 
         algorithm: Algorithm = None
 
@@ -48,8 +42,8 @@ class Agent:
         agent.algorithm = algorithm
 
         latency: LatencyFunction = None
-        lattype: str = sections[5].split(":")[0]
-        latargs: str = sections[5].split(":")[1]
+        lattype: str = j["latency"]
+        latargs: str = j["latencyargs"]
 
         if lattype == "linear":
             latency = LatencyFunctionLinear(agent, latargs)
@@ -62,7 +56,7 @@ class Agent:
         raise NotImplementedError
 
 class BasicAgent(Agent):
-    def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: str):
+    def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
         super().__init__(name, simulation, balance, shares)
 
     def inputData(self, trade: 'Trade', timestamp: int):
@@ -88,13 +82,11 @@ class Algorithm:
 class AlgorithmFixedPrice(Algorithm):
     # This class defines an algorithm that can be used by an agent 
     # args = price: float, quantity: int, buy: bool
-    def __init__(self, agent: Agent, args: str):
+    def __init__(self, agent: Agent, args: dict):
         super().__init__(agent)
-        a = args.split(",")
-        self.price = float(a[0])
-        self.quantity = int(a[1])
-        self.buy = a[2] == "True"
-        print(a[2])
+        self.price = args["price"]
+        self.quantity = args["quantity"]
+        self.buy = args["buy"]
 
     # returns a list of orders to place
     def getOrders(self, symbol: str, timestamp: int):
@@ -113,11 +105,10 @@ class LatencyFunction:
 class LatencyFunctionLinear(LatencyFunction):
     # Linear latency function: latency is linearly between min and max parameters
     # args = min: int, max: int
-    def __init__(self, agent: Agent, args: str):
+    def __init__(self, agent: Agent, args: dict):
         super().__init__(agent)
-        a = args.split(",")
-        self.minLatency = int(a[0])
-        self.maxLatency = int(a[1])
+        self.minLatency = args["min"]
+        self.maxLatency = args["max"]
 
     def getLatency(self) -> int:
         return random.randint(self.minLatency, self.maxLatency)

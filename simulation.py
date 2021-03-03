@@ -3,23 +3,28 @@ from agents import *
 import time
 
 class Simulation:
-    def __init__(self):
+    def __init__(self, file: str):
         self.eventQueue = EventQueue(self)
         self.agents = list()
         self.orderbooks = dict()
-        self.orderbooks["A"] = OrderBook(self)
 
-        self.agents.append(Agent.fromFile("agents/agent1.txt", self))
-        self.agents.append(Agent.fromFile("agents/agent2.txt", self))
-        self.agents.append(Agent.fromFile("agents/agent3.txt", self))
-        self.agents.append(Agent.fromFile("agents/agent4.txt", self))
-
+        self.loadFile(file)
         # look at algorithms, see what happens in simulation, read more later
         # normal distribution, mean = distance from exchange, variance = quality of network
         # volatility metric?
 
         self.tradesCount = 0
         self.broadcastTradeInfo([Trade(None, None, None, None, 0, "A", 0, 0)])
+    
+    def loadFile(self, file: str):
+        with open(file) as f:
+            j = json.loads(f.read())
+        
+        for s in j["symbols"]:
+            self.orderbooks[s] = OrderBook(self)
+
+        for s in j["agents"]:
+            self.agents.append(Agent.fromJson(s, self))
 
     def broadcastTradeInfo(self, trades):
         for trade in trades:
