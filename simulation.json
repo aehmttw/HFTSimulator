@@ -1,5 +1,6 @@
 {
     "symbols": ["A"],
+    "runtime": 10000,
 
     "agents":
     [ 
@@ -22,11 +23,11 @@
                 "quantity": 1,
                 "buy": true
             },
-            "latency": "linear",
+            "latency": "normal",
             "latencyargs":
             {
-                "min": 0,
-                "max": 100
+                "mean": 100,
+                "deviation": 20
             }
         },
 
@@ -49,11 +50,11 @@
                 "quantity": 1,
                 "buy": false
             },
-            "latency": "linear",
+            "latency": "normal",
             "latencyargs":
             {
-                "min": 0,
-                "max": 100
+                "mean": 100,
+                "deviation": 20
             }
         },
 
@@ -76,11 +77,11 @@
                 "quantity": 1,
                 "buy": true
             },
-            "latency": "linear",
+            "latency": "normal",
             "latencyargs":
             {
-                "min": 0,
-                "max": 100
+                "mean": 100,
+                "deviation": 20
             }
         },
 
@@ -103,11 +104,11 @@
                 "quantity": 1,
                 "buy": false
             },
-            "latency": "linear",
+            "latency": "normal",
             "latencyargs":
             {
-                "min": 0,
-                "max": 100
+                "mean": 100,
+                "deviation": 20
             }
         }
     ]

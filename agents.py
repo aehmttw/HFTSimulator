@@ -47,19 +47,21 @@ class Agent:
 
         if lattype == "linear":
             latency = LatencyFunctionLinear(agent, latargs)
+        elif lattype == "normal":
+            latency = LatencyFunctionNormal(agent, latargs)
 
         agent.latencyFunction = latency
 
         return agent
 
-    def inputData(self, trade: 'Trade', timestamp: int):
+    def inputData(self, trade: 'Trade', timestamp: float):
         raise NotImplementedError
 
 class BasicAgent(Agent):
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
         super().__init__(name, simulation, balance, shares)
 
-    def inputData(self, trade: 'Trade', timestamp: int):
+    def inputData(self, trade: 'Trade', timestamp: float):
         self.sharePrices[trade.symbol] = trade.price
         orders = self.algorithm.getOrders(trade.symbol, timestamp)
 
@@ -76,7 +78,7 @@ class Algorithm:
         self.agent = agent
 
     # returns a list of orders to place
-    def getOrders(self, symbol: str, timestamp: int):
+    def getOrders(self, symbol: str, timestamp: float):
         raise NotImplementedError
 
 class AlgorithmFixedPrice(Algorithm):
@@ -89,7 +91,7 @@ class AlgorithmFixedPrice(Algorithm):
         self.buy = args["buy"]
 
     # returns a list of orders to place
-    def getOrders(self, symbol: str, timestamp: int):
+    def getOrders(self, symbol: str, timestamp: float):
         order = Order(self.agent, self.buy, symbol, self.quantity, self.price, timestamp)
         return [order]
 
@@ -99,19 +101,30 @@ class LatencyFunction:
         self.agent = agent
 
     # returns a list of orders to place
-    def getLatency(self) -> int:
+    def getLatency(self) -> float:
         raise NotImplementedError
 
 class LatencyFunctionLinear(LatencyFunction):
     # Linear latency function: latency is linearly between min and max parameters
-    # args = min: int, max: int
+    # args = min: float, max: float
     def __init__(self, agent: Agent, args: dict):
         super().__init__(agent)
         self.minLatency = args["min"]
         self.maxLatency = args["max"]
 
-    def getLatency(self) -> int:
-        return random.randint(self.minLatency, self.maxLatency)
+    def getLatency(self) -> float:
+        return random.random() * (self.maxLatency - self.minLatency) + self.minLatency
+
+class LatencyFunctionNormal(LatencyFunction):
+    # Normal distribution latency function: latency follows a normal distribution with given mean and deviation
+    # args = mean: float, deviation: float
+    def __init__(self, agent: Agent, args: dict):
+        super().__init__(agent)
+        self.meanLatency = args["mean"]
+        self.latencyDeviation = args["deviation"]
+
+    def getLatency(self) -> float:
+        return max(0, numpy.random.normal(self.meanLatency, self.latencyDeviation))
 
 # todo - add multiple agent types
 

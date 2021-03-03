@@ -4,7 +4,7 @@ class Order:
     # submit buy or sell functions which set timestamp
 
     #todo - add limit support
-    def __init__(self, agent: 'Agent', buy: bool, symbol: str, amount: int, price: float, timestamp: int):
+    def __init__(self, agent: 'Agent', buy: bool, symbol: str, amount: int, price: float, timestamp: float):
         self.cancel = False
         self.orderID = uuid.uuid4()
         self.agent = agent
@@ -34,7 +34,7 @@ class Order:
     def __ge__(self, other):
         return self.orderID >= other.orderID
 
-def makeCancelOrder(agent: 'Agent', cancelID: uuid, timestamp: int) -> Order:
+def makeCancelOrder(agent: 'Agent', cancelID: uuid, timestamp: float) -> Order:
     o = Order(agent, False, "", 0, 0, timestamp)
     o.cancel = True
     o.orderID = cancelID

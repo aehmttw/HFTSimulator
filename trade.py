@@ -2,7 +2,7 @@ from agents import *
 from order import *
 
 class Trade:
-    def __init__(self, buyer: 'Agent', seller: 'Agent', buyOrder: 'Order', sellOrder: 'Order', price: float, symbol: str, amount: int, timestamp: int):
+    def __init__(self, buyer: 'Agent', seller: 'Agent', buyOrder: 'Order', sellOrder: 'Order', price: float, symbol: str, amount: int, timestamp: float):
         #print("trade" + str(timestamp))
         self.buyer = buyer
         self.seller = seller

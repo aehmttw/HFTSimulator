@@ -1,12 +1,13 @@
+from typing_extensions import runtime
 from events import *
 from agents import *
-import time
 
 class Simulation:
     def __init__(self, file: str):
         self.eventQueue = EventQueue(self)
         self.agents = list()
         self.orderbooks = dict()
+        self.maxTime = 0
 
         self.loadFile(file)
         # look at algorithms, see what happens in simulation, read more later
@@ -14,12 +15,16 @@ class Simulation:
         # volatility metric?
 
         self.tradesCount = 0
-        self.broadcastTradeInfo([Trade(None, None, None, None, 0, "A", 0, 0)])
+
+        for o in self.orderbooks:
+            self.broadcastTradeInfo([Trade(None, None, None, None, 0, o, 0, 0)])
     
     def loadFile(self, file: str):
         with open(file) as f:
             j = json.loads(f.read())
         
+        self.maxTime = j["runtime"]
+
         for s in j["symbols"]:
             self.orderbooks[s] = OrderBook(self)
 
@@ -36,14 +41,17 @@ class Simulation:
         self.eventQueue.queueEvent(event)
 
     def run(self):
-        t = time.time()
         events = 0
-        while (not self.eventQueue.isEmpty()) and time.time() <= t + 10:
+        while not self.eventQueue.isEmpty():
             events += 1
             event = self.eventQueue.nextEvent()
+
+            if event.time > self.maxTime:
+                break
+
             #print(event.toString())
             event.run()
-        
+
         #print(self.orderbooks["A"].toString())
 
             # test to make sure this is working correctly

@@ -29,7 +29,7 @@ class OrderBook:
         else:
             heapq.heappush(self.sellbook, (order.price, order.timestamp, order))
 
-    def input(self, order: Order, timestamp: int):
+    def input(self, order: Order, timestamp: float):
         if order.cancel:
             for o in self.sellbook:
                 order2: Order = o[2]
@@ -51,7 +51,7 @@ class OrderBook:
             self.datapoints.append(DataPoint(self, timestamp))
 
     
-    def inputOrder(self, order1: Order, order2: Order, timestamp: int, trades) -> bool:
+    def inputOrder(self, order1: Order, order2: Order, timestamp: float, trades) -> bool:
         if order2.price <= order1.price:
             if order2.amount > order1.amount:
                 trades.append(Trade(order1.agent, order2.agent, order1, order2, order2.price, order1.symbol, order1.amount, timestamp))
@@ -73,7 +73,7 @@ class OrderBook:
 
     # Takes in an order and tries to match it
     # Create list of trade objects (buyer, seller, price, timestamp)
-    def matchOrder(self, order: Order, timestamp: int) -> list: # try to comment
+    def matchOrder(self, order: Order, timestamp: float) -> list: # try to comment
         trades: list = list()
         if order.buy: # try reusing code, define which order book is which, operation for price comparison
             while order.amount > 0: 
@@ -169,7 +169,7 @@ class OrderBook:
         plot.ylabel("gap")
         plot.plot(times, data)   
 
-    def plotVolatility(self, time: int):
+    def plotVolatility(self, time: float):
         times = list()
         data = list()
         
@@ -180,7 +180,7 @@ class OrderBook:
 
             index2: int = index
             while index2 >= 0:
-                time2: int = self.datapoints[index2].timestamp
+                time2: float = self.datapoints[index2].timestamp
 
                 if time2 + time >= datapoint.timestamp:
                     price.append(self.datapoints[index2].price)
@@ -197,7 +197,7 @@ class OrderBook:
         plot.plot(times, data)   
 
 class DataPoint:
-    def __init__(self, orderBook: OrderBook, timestamp: int):
+    def __init__(self, orderBook: OrderBook, timestamp: float):
         self.price = orderBook.price
         self.timestamp = timestamp
         self.bookSize = len(orderBook.sellbook) + len(orderBook.buybook)

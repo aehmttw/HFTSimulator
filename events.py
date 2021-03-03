@@ -4,7 +4,7 @@ from orderbook import *
 from agents import *
 
 class Event:
-    def __init__(self, time: int):
+    def __init__(self, time: float):
        self.time = time
     
     def run(self):
@@ -32,7 +32,7 @@ class Event:
         return self.time >= other.time
 
 class EventOrder(Event):
-    def __init__(self, time: int, order: 'Order', orderBook: 'OrderBook'):
+    def __init__(self, time: float, order: 'Order', orderBook: 'OrderBook'):
         super().__init__(time)
         self.order = order
         self.orderBook = orderBook
@@ -44,7 +44,7 @@ class EventOrder(Event):
         return "Order event: time = " + str(self.time) + " from " + self.order.agent.name + "; id " + str(self.order.orderID)
 
 class EventMarketData(Event):
-    def __init__(self, time: int, trade: 'Trade', target: 'Agent'):
+    def __init__(self, time: float, trade: 'Trade', target: 'Agent'):
         super().__init__(time)
         self.trade = trade
         self.target = target
