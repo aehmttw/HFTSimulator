@@ -7,7 +7,7 @@ class OrderBook:
 
     # Every agent will have their own order books, representing only the data they have received
     # These separate order books, unlike the main ones, have simulation set to None
-    def __init__(self, simulation: 'Simulation'):
+    def __init__(self, simulation: 'Simulation', price: float):
         # Stores sell side of order book as tuples with price, timestamp, and Order.
         # The lowest sell order is popped first. In the event of a tie, the oldest one should pop first.
         self.sellbook = []
@@ -18,16 +18,16 @@ class OrderBook:
 
         self.trades = []
         self.datapoints = []
-        self.price = 0
+        self.price = price
 
         self.simulation = simulation
 
     # Adds an order to the order book. Used internally.
-    def _addOrder(self, order: Order):
+    def _addOrder(self, order: Order, timestamp: float):
         if order.buy:
-            heapq.heappush(self.buybook, (-order.price, order.timestamp, order))
+            heapq.heappush(self.buybook, (-order.price, timestamp, order))
         else:
-            heapq.heappush(self.sellbook, (order.price, order.timestamp, order))
+            heapq.heappush(self.sellbook, (order.price, timestamp, order))
 
     def input(self, order: Order, timestamp: float):
         if order.cancel:
@@ -46,27 +46,26 @@ class OrderBook:
                 if not (self.simulation is None):
                     trade.process() 
                     self.price = trade.price
-
                 self.trades.append(trade)
             self.datapoints.append(DataPoint(self, timestamp))
 
     
-    def inputOrder(self, order1: Order, order2: Order, timestamp: float, trades) -> bool:
+    def inputOrder(self, order1: Order, order2: Order, price: float, timestamp: float, trades) -> bool:
         if order2.price <= order1.price:
             if order2.amount > order1.amount:
-                trades.append(Trade(order1.agent, order2.agent, order1, order2, order2.price, order1.symbol, order1.amount, timestamp))
+                trades.append(Trade(order1.agent, order2.agent, order1, order2, price, order1.symbol, order1.amount, timestamp))
                 order2.amount -= order1.amount
                 order1.amount = 0
-                self._addOrder(order2)
+                self._addOrder(order2, timestamp)
                 return True
             else:
-                trades.append(Trade(order1.agent, order2.agent, order1, order2, order2.price, order1.symbol, order2.amount, timestamp))
+                trades.append(Trade(order1.agent, order2.agent, order1, order2, price, order1.symbol, order2.amount, timestamp))
                 order1.amount -= order2.amount
                 order2.amount = 0
                 return False
         else:
-            self._addOrder(order2)
-            self._addOrder(order1)
+            self._addOrder(order2, timestamp)
+            self._addOrder(order1, timestamp)
             return True   
                 
     # read config file to define latency parameters
@@ -78,20 +77,20 @@ class OrderBook:
         if order.buy: # try reusing code, define which order book is which, operation for price comparison
             while order.amount > 0: 
                 if len(self.sellbook) > 0:
-                    other: Order = heapq.heappop(self.sellbook)[2]
-                    if self.inputOrder(order, other, timestamp, trades):
+                    other = heapq.heappop(self.sellbook)[2]
+                    if self.inputOrder(order, other, other.price, timestamp, trades):
                         break
                 else:
-                    self._addOrder(order)
+                    self._addOrder(order, timestamp)
                     break                
         else:
             while order.amount > 0:
                 if len(self.buybook) > 0:
-                    other: Order = heapq.heappop(self.buybook)[2]
-                    if self.inputOrder(other, order, timestamp, trades):
+                    other = heapq.heappop(self.buybook)[2]
+                    if self.inputOrder(other, order, other.price, timestamp, trades):
                         break
                 else:
-                    self._addOrder(order)
+                    self._addOrder(order, timestamp)
                     break
 
         if not (self.simulation is None):
@@ -128,6 +127,13 @@ class OrderBook:
             o = order[2]
             l.append(o.amount)
             l.append(o.price)
+        return l
+
+    def _getTrades(self) -> list:
+        l = list()
+        for trade in self.trades:
+            l.append(trade.amount)
+            l.append(trade.price)
         return l
 
     def plotPrice(self):
@@ -169,13 +175,22 @@ class OrderBook:
         plot.ylabel("gap")
         plot.plot(times, data)   
 
-    def plotVolatility(self, time: float):
+    def plotVolatility(self):
         times = list()
         data = list()
         
-        index: int = 0
         for datapoint in self.datapoints:
             times.append(datapoint.timestamp)
+            data.append(datapoint.volatility)
+
+        plot.figure()
+        plot.xlabel("time")
+        plot.ylabel("volatility")
+        plot.plot(times, data)   
+
+    def calculateVolatility(self, time: float):
+        index: int = 0
+        for datapoint in self.datapoints:
             price = list()
 
             index2: int = index
@@ -188,13 +203,8 @@ class OrderBook:
                 else:
                     break
             
-            data.append(numpy.std(price))
+            datapoint.volatility = numpy.std(price)
             index += 1
-
-        plot.figure()
-        plot.xlabel("time")
-        plot.ylabel("volatility")
-        plot.plot(times, data)   
 
 class DataPoint:
     def __init__(self, orderBook: OrderBook, timestamp: float):

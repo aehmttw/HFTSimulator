@@ -3,14 +3,15 @@ from events import *
 from agents import *
 import json
 class Simulation:
-    def __init__(self, file: str):
+    def __init__(self, file: str = None):
         self.eventQueue = EventQueue(self)
         self.agents = list()
         self.orderbooks = dict()
         self.startingPrices = dict()
         self.maxTime = 0
 
-        self.loadFile(file)
+        if file is not None:
+            self.loadFile(file)
         # look at algorithms, see what happens in simulation, read more later
         # normal distribution, mean = distance from exchange, variance = quality of network
         # volatility metric?
@@ -27,7 +28,7 @@ class Simulation:
         self.maxTime = j["runtime"]
 
         for s in j["symbols"]:
-            self.orderbooks[s] = OrderBook(self)
+            self.orderbooks[s] = OrderBook(self, (j["symbols"])[s])
             self.startingPrices[s] = (j["symbols"])[s]
 
         for s in j["agents"]:
@@ -51,7 +52,7 @@ class Simulation:
             if event.time > self.maxTime:
                 break
 
-            #print(event.toString())
+            print(event.toString())
             event.run()
 
         #print(self.orderbooks["A"].toString())

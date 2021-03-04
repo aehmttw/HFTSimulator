@@ -4,7 +4,7 @@
         "A": 100
     },
     
-    "runtime": 2000,
+    "runtime": 2500,
 
     "agents":
     [ 
@@ -23,7 +23,8 @@
             "algorithm": "randomnormal",
             "algorithmargs": 
             {
-                "quantity": 1,
+                "quantitymin": 1,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",
@@ -49,7 +50,8 @@
             "algorithm": "randomnormal",
             "algorithmargs": 
             {
-                "quantity": 1,
+                "quantitymin": 1,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",
@@ -75,7 +77,8 @@
             "algorithm": "randomnormal",
             "algorithmargs": 
             {
-                "quantity": 1,
+                "quantitymin": 1,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",
@@ -101,7 +104,8 @@
             "algorithm": "randomnormal",
             "algorithmargs": 
             {
-                "quantity": 1,
+                "quantitymin": 1,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",
@@ -127,7 +131,8 @@
             "algorithm": "randomnormal",
             "algorithmargs": 
             {
-                "quantity": 1,
+                "quantitymin": 1,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",

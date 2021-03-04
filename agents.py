@@ -102,14 +102,16 @@ class AlgorithmRandomNormal(Algorithm):
     def __init__(self, agent: Agent, args: dict):
         super().__init__(agent)
         self.spread = args["spread"]
-        self.quantity = args["quantity"]
+        self.quantityMin = args["quantitymin"]
+        self.quantityMax = args["quantitymax"]
 
     # returns a list of orders to place
     def getOrders(self, symbol: str, timestamp: float):
         price: float = self.agent.sharePrices[symbol]
         buy: bool = random.randint(1, 2) == 1
-        order = Order(self.agent, buy, symbol, self.quantity, numpy.random.normal(price, self.spread * price), timestamp)
+        order = Order(self.agent, buy, symbol, random.randint(self.quantityMin, self.quantityMax), numpy.random.normal(price, self.spread * price), timestamp)
         return [order]
+
 class LatencyFunction:
     # This class defines a latency distribution function that can be used by an agent
     def __init__(self, agent: Agent):
