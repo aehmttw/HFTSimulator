@@ -2,7 +2,6 @@ from orderbook import *
 from order import *
 from events import *
 import random
-import json
 class Agent:
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict):
         self.balance = balance
@@ -38,6 +37,8 @@ class Agent:
 
         if algtype == "fixedprice":
             algorithm = AlgorithmFixedPrice(agent, algargs)
+        if algtype == "randomnormal":
+            algorithm = AlgorithmRandomNormal(agent, algargs)
 
         agent.algorithm = algorithm
 
@@ -95,6 +96,20 @@ class AlgorithmFixedPrice(Algorithm):
         order = Order(self.agent, self.buy, symbol, self.quantity, self.price, timestamp)
         return [order]
 
+class AlgorithmRandomNormal(Algorithm):
+    # This class defines an algorithm that can be used by an agent 
+    # args = price: float, quantity: int, buy: bool
+    def __init__(self, agent: Agent, args: dict):
+        super().__init__(agent)
+        self.spread = args["spread"]
+        self.quantity = args["quantity"]
+
+    # returns a list of orders to place
+    def getOrders(self, symbol: str, timestamp: float):
+        price: float = self.agent.sharePrices[symbol]
+        buy: bool = random.randint(1, 2) == 1
+        order = Order(self.agent, buy, symbol, self.quantity, numpy.random.normal(price, self.spread * price), timestamp)
+        return [order]
 class LatencyFunction:
     # This class defines a latency distribution function that can be used by an agent
     def __init__(self, agent: Agent):

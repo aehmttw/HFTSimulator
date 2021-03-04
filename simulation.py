@@ -1,12 +1,13 @@
 from typing_extensions import runtime
 from events import *
 from agents import *
-
+import json
 class Simulation:
     def __init__(self, file: str):
         self.eventQueue = EventQueue(self)
         self.agents = list()
         self.orderbooks = dict()
+        self.startingPrices = dict()
         self.maxTime = 0
 
         self.loadFile(file)
@@ -17,7 +18,7 @@ class Simulation:
         self.tradesCount = 0
 
         for o in self.orderbooks:
-            self.broadcastTradeInfo([Trade(None, None, None, None, 0, o, 0, 0)])
+            self.broadcastTradeInfo([Trade(None, None, None, None, self.startingPrices[o], o, 0, 0)])
     
     def loadFile(self, file: str):
         with open(file) as f:
@@ -27,6 +28,7 @@ class Simulation:
 
         for s in j["symbols"]:
             self.orderbooks[s] = OrderBook(self)
+            self.startingPrices[s] = (j["symbols"])[s]
 
         for s in j["agents"]:
             self.agents.append(Agent.fromJson(s, self))

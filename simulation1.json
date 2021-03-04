@@ -4,7 +4,7 @@
         "A": 100
     },
     
-    "runtime": 2000,
+    "runtime": 10000,
 
     "agents":
     [ 
@@ -20,11 +20,12 @@
             {
                 "A": 100
             },
-            "algorithm": "randomnormal",
+            "algorithm": "fixedprice",
             "algorithmargs": 
             {
+                "price": 100,
                 "quantity": 1,
-                "spread": 0.1
+                "buy": true
             },
             "latency": "normal",
             "latencyargs":
@@ -46,11 +47,12 @@
             {
                 "A": 100
             },
-            "algorithm": "randomnormal",
+            "algorithm": "fixedprice",
             "algorithmargs": 
             {
+                "price": 100,
                 "quantity": 1,
-                "spread": 0.1
+                "buy": false
             },
             "latency": "normal",
             "latencyargs":
@@ -72,11 +74,12 @@
             {
                 "A": 100
             },
-            "algorithm": "randomnormal",
+            "algorithm": "fixedprice",
             "algorithmargs": 
             {
+                "price": 99,
                 "quantity": 1,
-                "spread": 0.1
+                "buy": true
             },
             "latency": "normal",
             "latencyargs":
@@ -98,37 +101,12 @@
             {
                 "A": 100
             },
-            "algorithm": "randomnormal",
+            "algorithm": "fixedprice",
             "algorithmargs": 
             {
+                "price": 101,
                 "quantity": 1,
-                "spread": 0.1
-            },
-            "latency": "normal",
-            "latencyargs":
-            {
-                "mean": 100,
-                "deviation": 20
-            }
-        },
-
-        {
-            "name": "testagent5",
-            "balance": 10000,
-            "type": "basic",
-            "typeargs":
-            {
-
-            },
-            "shares": 
-            {
-                "A": 100
-            },
-            "algorithm": "randomnormal",
-            "algorithmargs": 
-            {
-                "quantity": 1,
-                "spread": 0.1
+                "buy": false
             },
             "latency": "normal",
             "latencyargs":
