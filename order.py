@@ -33,9 +33,3 @@ class Order:
 
     def __ge__(self, other):
         return self.orderID >= other.orderID
-
-def makeCancelOrder(agent: 'Agent', cancelID: uuid, timestamp: float) -> Order:
-    o = Order(agent, False, "", 0, 0, timestamp)
-    o.cancel = True
-    o.orderID = cancelID
-    return o

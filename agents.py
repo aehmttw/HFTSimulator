@@ -29,6 +29,8 @@ class Agent:
         agent: Agent = None
         if type == "basic":
             agent = BasicAgent(name, simulation, balance, shares, args)
+        elif type == "basicmarketmaker":
+            agent = BasicMarketMakerAgent(name, simulation, balance, shares, args)
 
         algtype: str = j["algorithm"]
         algargs: dict = j["algorithmargs"]
@@ -37,8 +39,12 @@ class Agent:
 
         if algtype == "fixedprice":
             algorithm = AlgorithmFixedPrice(agent, algargs)
-        if algtype == "randomnormal":
+        elif algtype == "randomnormal":
             algorithm = AlgorithmRandomNormal(agent, algargs)
+        elif algtype == "randomlinear":
+            algorithm = AlgorithmRandomLinear(agent, algargs)
+        elif algtype == "simplemarketmaker":
+            algorithm = AlgorithmSimpleMarketMaker(agent, algargs)
 
         agent.algorithm = algorithm
 
@@ -50,6 +56,7 @@ class Agent:
             latency = LatencyFunctionLinear(agent, latargs)
         elif lattype == "normal":
             latency = LatencyFunctionNormal(agent, latargs)
+            
 
         agent.latencyFunction = latency
 
@@ -69,7 +76,26 @@ class BasicAgent(Agent):
         for order in orders:
             self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[trade.symbol]))
 
-    
+class BasicMarketMakerAgent(Agent):
+    def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
+        super().__init__(name, simulation, balance, shares)
+        self.lastBuy = dict()
+        self.lastSell = dict()
+
+    def inputData(self, trade: 'Trade', timestamp: float):
+        if trade.buyOrder is not None and trade.sellOrder is not None:
+            if trade.buyOrder.timestamp < trade.sellOrder.timestamp:
+                self.lastBuy[trade.symbol] = trade.buyOrder.price
+            else:
+                self.lastSell[trade.symbol] = trade.sellOrder.price
+        
+        self.sharePrices[trade.symbol] = trade.price
+        orders = self.algorithm.getOrders(trade.symbol, timestamp)
+
+        for order in orders:
+            self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[trade.symbol]))
+
+
 # market maker - could schedule events at for self
 # maybe plot event queue size over time to see how long to simulate for, to see practicality
 
@@ -97,8 +123,6 @@ class AlgorithmFixedPrice(Algorithm):
         return [order]
 
 class AlgorithmRandomNormal(Algorithm):
-    # This class defines an algorithm that can be used by an agent 
-    # args = price: float, quantity: int, buy: bool
     def __init__(self, agent: Agent, args: dict):
         super().__init__(agent)
         self.spread = args["spread"]
@@ -111,6 +135,46 @@ class AlgorithmRandomNormal(Algorithm):
         buy: bool = random.randint(1, 2) == 1
         order = Order(self.agent, buy, symbol, random.randint(self.quantityMin, self.quantityMax), numpy.random.normal(price, self.spread * price), timestamp)
         return [order]
+
+class AlgorithmRandomLinear(Algorithm):
+    def __init__(self, agent: Agent, args: dict):
+        super().__init__(agent)
+        self.spread = args["spread"]
+        self.quantityMin = args["quantitymin"]
+        self.quantityMax = args["quantitymax"]
+
+    # returns a list of orders to place
+    def getOrders(self, symbol: str, timestamp: float):
+        price: float = self.agent.sharePrices[symbol]
+        buy: bool = random.randint(1, 2) == 1
+        order = Order(self.agent, buy, symbol, random.randint(self.quantityMin, self.quantityMax), ((random.random() * 2 - 1) * self.spread + 1) * price, timestamp)
+        return [order]
+
+class AlgorithmSimpleMarketMaker(Algorithm):
+    def __init__(self, agent: BasicMarketMakerAgent, args: dict):
+        super().__init__(agent)
+        self.distance = args["distance"]
+        self.quantity = args["quantity"]
+        self.lastBuy: Order = None
+        self.lastSell: Order = None
+
+    # returns a list of orders to place
+    def getOrders(self, symbol: str, timestamp: float):
+        orders = list()
+
+        if self.lastBuy is not None and self.lastSell is not None:
+            orders.append(self.agent.simulation.makeCancelOrder(self.agent, self.lastBuy.orderID, timestamp))
+            orders.append(self.agent.simulation.makeCancelOrder(self.agent, self.lastSell.orderID, timestamp))
+        
+        if symbol in self.agent.lastBuy and symbol in self.agent.lastSell:
+            self.lastBuy = Order(self.agent, True, symbol, self.quantity, self.agent.lastBuy[symbol] + self.distance, timestamp)
+            orders.append(self.lastBuy)
+
+            if self.agent.lastBuy[symbol] + self.distance < self.agent.lastSell[symbol] - self.distance:
+                self.lastSell = Order(self.agent, False, symbol, self.quantity, self.agent.lastSell[symbol] - self.distance, timestamp)
+                orders.append(self.lastSell)
+
+        return orders
 
 class LatencyFunction:
     # This class defines a latency distribution function that can be used by an agent

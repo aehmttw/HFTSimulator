@@ -24,7 +24,7 @@
             "algorithmargs": 
             {
                 "quantitymin": 1,
-                "quantitymax": 100,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",
@@ -51,7 +51,7 @@
             "algorithmargs": 
             {
                 "quantitymin": 1,
-                "quantitymax": 100,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",
@@ -78,7 +78,7 @@
             "algorithmargs": 
             {
                 "quantitymin": 1,
-                "quantitymax": 100,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",
@@ -105,7 +105,7 @@
             "algorithmargs": 
             {
                 "quantitymin": 1,
-                "quantitymax": 100,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",
@@ -132,7 +132,7 @@
             "algorithmargs": 
             {
                 "quantitymin": 1,
-                "quantitymax": 100,
+                "quantitymax": 1,
                 "spread": 0.1
             },
             "latency": "normal",

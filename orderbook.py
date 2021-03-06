@@ -39,7 +39,7 @@ class OrderBook:
             for o in self.buybook:
                 order2: Order = o[2]
                 if order2.orderID == order.orderID:
-                    self.sellbook.remove(o)
+                    self.buybook.remove(o)
         else:
             trades = self.matchOrder(order, timestamp)
             for trade in trades:
@@ -74,7 +74,7 @@ class OrderBook:
     # Create list of trade objects (buyer, seller, price, timestamp)
     def matchOrder(self, order: Order, timestamp: float) -> list: # try to comment
         trades: list = list()
-        if order.buy: # try reusing code, define which order book is which, operation for price comparison
+        if order.buy: 
             while order.amount > 0: 
                 if len(self.sellbook) > 0:
                     other = heapq.heappop(self.sellbook)[2]

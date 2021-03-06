@@ -42,6 +42,12 @@ class Simulation:
 
     def pushEvent(self, event: Event):
         self.eventQueue.queueEvent(event)
+    
+    def makeCancelOrder(self, agent: 'Agent', cancelID: uuid, timestamp: float) -> Order:
+        o = Order(agent, False, "", 0, 0, timestamp)
+        o.cancel = True
+        o.orderID = cancelID
+        return o
 
     def run(self):
         events = 0
