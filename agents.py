@@ -29,6 +29,8 @@ class Agent:
         agent: Agent = None
         if type == "basic":
             agent = BasicAgent(name, simulation, balance, shares, args)
+        elif type == "canceling":
+            agent = CancelingAgent(name, simulation, balance, shares, args)
         elif type == "basicmarketmaker":
             agent = BasicMarketMakerAgent(name, simulation, balance, shares, args)
 
@@ -74,6 +76,29 @@ class BasicAgent(Agent):
         orders = self.algorithm.getOrders(trade.symbol, timestamp)
 
         for order in orders:
+            self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[trade.symbol]))
+
+class CancelingAgent(Agent):
+    def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
+        super().__init__(name, simulation, balance, shares)
+        self.activeOrders = list()
+        self.orderLifespan = args["orderlifespan"]
+        self.orderChance = args["orderchance"]
+
+    def inputData(self, trade: 'Trade', timestamp: float):
+        self.sharePrices[trade.symbol] = trade.price
+
+        for order in self.activeOrders:
+            if timestamp - order.timestamp >= self.orderLifespan:
+                 self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), self.simulation.makeCancelOrder(self, order.orderID, timestamp), self.simulation.orderbooks[trade.symbol]))
+        
+        if random.random() >= self.orderChance:
+            return
+
+        orders = self.algorithm.getOrders(trade.symbol, timestamp)
+        
+        for order in orders:
+            self.activeOrders.append(order)
             self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[trade.symbol]))
 
 class BasicMarketMakerAgent(Agent):

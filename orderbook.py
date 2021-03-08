@@ -1,5 +1,6 @@
 import heapq
 import matplotlib.pyplot as plot
+import mpl_finance as plotf
 from order import Order
 from trade import Trade
 import numpy
@@ -148,6 +149,44 @@ class OrderBook:
         plot.xlabel("time")
         plot.ylabel("price")
         plot.plot(times, data)   
+        #plotf.candlestick_ohlc(times, data, width=25)
+
+    def plotPriceCandlestick(self, interval: float):
+        data = list()
+
+        last: int = 0
+
+        start: float = -1
+        current: float = 0
+        low: float = current
+        high: float = current
+
+        for datapoint in self.datapoints:
+            if start < 0:
+                start = datapoint.price
+                current = datapoint.price
+                low = datapoint.price
+                high = datapoint.price
+
+            l = int((datapoint.timestamp) / interval)
+
+            if l > last:
+                data.append((l * interval, start, high, low, current))
+                start = current
+                low = current
+                high = current
+                last = l
+
+            current = datapoint.price
+            low = min(datapoint.price, low)
+            high = max(datapoint.price, high)
+
+        fig, ax = plot.subplots()
+
+        plot.figure()
+        ax.set_xlabel('time')
+        ax.set_ylabel('price')
+        plotf.candlestick_ohlc(ax, data)   
 
     def plotBookSize(self):
         times = list()
