@@ -4,19 +4,17 @@
         "A": 100
     },
     
-    "runtime": 10000,
+    "runtime": 1500,
 
     "agents":
     [ 
         {
             "name": "testagent1",
             "balance": 10000,
-            "type": "canceling",
+            "type": "basic",
             "typeargs":
             {
-                "orderlifespan": 500,
-                "orderchance": 0.4,
-                "ordercooldown": 100
+                
             },
             "shares": 
             {
@@ -40,12 +38,10 @@
         {
             "name": "testagent2",
             "balance": 10000,
-            "type": "canceling",
+            "type": "basic",
             "typeargs":
             {
-                "orderlifespan": 500,
-                "orderchance": 0.4,
-                "ordercooldown": 100
+                
             },
             "shares": 
             {
@@ -69,12 +65,10 @@
         {
             "name": "testagent3",
             "balance": 10000,
-            "type": "canceling",
+            "type": "basic",
             "typeargs":
             {
-                "orderlifespan": 500,
-                "orderchance": 0.4,
-                "ordercooldown": 100
+                
             },
             "shares": 
             {
@@ -98,12 +92,10 @@
         {
             "name": "testagent4",
             "balance": 10000,
-            "type": "canceling",
+            "type": "basic",
             "typeargs":
             {
-                "orderlifespan": 500,
-                "orderchance": 0.4,
-                "ordercooldown": 100
+               
             },
             "shares": 
             {
@@ -127,12 +119,10 @@
         {
             "name": "testagent5",
             "balance": 10000,
-            "type": "canceling",
+            "type": "basic",
             "typeargs":
             {
-                "orderlifespan": 500,
-                "orderchance": 0.4,
-                "ordercooldown": 100
+                
             },
             "shares": 
             {

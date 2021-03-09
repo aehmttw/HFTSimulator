@@ -113,6 +113,33 @@ class OrderBook:
             s += "Price: " + str(o.price) + ", Quantity: " + str(o.amount) + "\n"
         
         return s
+    
+    def toStringShort(self) -> str:
+        s = "Sell orders: \n"
+        
+        minsell = float("inf")
+        maxsell = -float("inf")
+
+        for order in self.sellbook:
+            o: Order = order[2]
+            minsell = min(minsell, o.price)
+            maxsell = max(maxsell, o.price)
+
+        minbuy = float("inf")
+        maxbuy = -float("inf")
+
+        s += "Amount = " + str(len(self.sellbook)) + ", " + str(minsell) + "-" + str(maxsell)
+
+        s += "\nBuy orders: \n"
+
+        for order in self.buybook:
+            o: Order = order[2]
+            minbuy = min(minbuy, o.price)
+            maxbuy = max(maxbuy, o.price)
+
+        s += "Amount = " + str(len(self.buybook)) + ", " + str(minbuy) + "-" + str(maxbuy)
+
+        return s
 
     def _getBuyList(self) -> list:
         l = list()

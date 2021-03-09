@@ -38,7 +38,9 @@ class Simulation:
         for trade in trades:
             self.tradesCount = self.tradesCount + 1
             for agent in self.agents:
-                self.eventQueue.queueEvent(EventMarketData(trade.timestamp + agent.latencyFunction.getLatency(), trade, agent))
+                latency: float = agent.latencyFunction.getLatency()
+                if trade.timestamp + latency > agent.orderBlockTime:
+                    self.eventQueue.queueEvent(EventMarketData(trade.timestamp + latency, trade, agent))
 
     def pushEvent(self, event: Event):
         self.eventQueue.queueEvent(event)
@@ -51,26 +53,38 @@ class Simulation:
 
     def run(self):
         events = 0
-        while not self.eventQueue.isEmpty():
+
+        time: int = 0
+        timestamp: float = 0
+
+        while True:
+            if self.eventQueue.isEmpty():
+                for o in self.orderbooks:
+                    self.broadcastTradeInfo([Trade(None, None, None, None, self.orderbooks[o].price, o, 0, timestamp)])
+
+            if self.eventQueue.isEmpty():
+                t: float = float("inf")
+
+                for a in self.agents:
+                    t = min(a.orderBlockTime, t)
+                
+                timestamp = t
+
             events += 1
             event = self.eventQueue.nextEvent()
+            
+            timestamp = event.time
+            oldTime = time
+            time = int(event.time / 100)
+
+            if time != oldTime:
+                print(time)
+                print(self.orderbooks["A"].toStringShort())
 
             if event.time > self.maxTime:
                 break
 
-            print(event.toString())
+            #print(event.toString())
             event.run()
 
         #print(self.orderbooks["A"].toString())
-
-            # test to make sure this is working correctly
-            # algorithms and graphing, plots at end of simulation (what are we interested in?) - things like price, volatility and relation to hypothesis
-            # first blog post - talk about design, simulator
-
-
-
-# add push event method to internally push an event (can post-process here)
-# design diagram of how these classes interact with each other
-
-
-# call next event, process event, which can push back

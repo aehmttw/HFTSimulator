@@ -7,6 +7,7 @@ class Agent:
         self.balance = balance
         self.name = name
         self.simulation = simulation
+        self.orderBlockTime = -1
         
         # Symbol -> amount
         self.shares = shares
@@ -84,6 +85,9 @@ class CancelingAgent(Agent):
         self.activeOrders = list()
         self.orderLifespan = args["orderlifespan"]
         self.orderChance = args["orderchance"]
+        self.orderCooldown = args["ordercooldown"]
+        self.orderBlockTime = random.random() * self.orderCooldown
+        #todo - make this block for multiple books
 
     def inputData(self, trade: 'Trade', timestamp: float):
         self.sharePrices[trade.symbol] = trade.price
@@ -100,6 +104,8 @@ class CancelingAgent(Agent):
         for order in orders:
             self.activeOrders.append(order)
             self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[trade.symbol]))
+        
+        self.orderBlockTime = timestamp + self.orderCooldown
 
 class BasicMarketMakerAgent(Agent):
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
@@ -175,6 +181,8 @@ class AlgorithmRandomLinear(Algorithm):
         order = Order(self.agent, buy, symbol, random.randint(self.quantityMin, self.quantityMax), ((random.random() * 2 - 1) * self.spread + 1) * price, timestamp)
         return [order]
 
+# Add another market maker with predefined prices
+# Going negative issue - prevent trading what one does not have
 class AlgorithmSimpleMarketMaker(Algorithm):
     def __init__(self, agent: BasicMarketMakerAgent, args: dict):
         super().__init__(agent)
