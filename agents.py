@@ -164,7 +164,8 @@ class AlgorithmRandomNormal(Algorithm):
     def getOrders(self, symbol: str, timestamp: float):
         price: float = self.agent.sharePrices[symbol]
         buy: bool = random.randint(1, 2) == 1
-        order = Order(self.agent, buy, symbol, random.randint(self.quantityMin, self.quantityMax), numpy.random.normal(price, self.spread * price), timestamp)
+        quantity: int = random.randint(self.quantityMin, self.quantityMax)
+        order = Order(self.agent, buy, symbol, quantity, numpy.random.normal(price, self.spread * price), timestamp)
         return [order]
 
 class AlgorithmRandomLinear(Algorithm):
@@ -178,7 +179,8 @@ class AlgorithmRandomLinear(Algorithm):
     def getOrders(self, symbol: str, timestamp: float):
         price: float = self.agent.sharePrices[symbol]
         buy: bool = random.randint(1, 2) == 1
-        order = Order(self.agent, buy, symbol, random.randint(self.quantityMin, self.quantityMax), ((random.random() * 2 - 1) * self.spread + 1) * price, timestamp)
+        quantity: int = random.randint(self.quantityMin, self.quantityMax)
+        order = Order(self.agent, buy, symbol, quantity, ((random.random() * 2 - 1) * self.spread + 1) * price, timestamp)
         return [order]
 
 # Add another market maker with predefined prices

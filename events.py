@@ -36,9 +36,10 @@ class EventOrder(Event):
         super().__init__(time)
         self.order = order
         self.orderBook = orderBook
+        self.order.receiveTimestamp = time
     
     def run(self):
-        self.orderBook.input(self.order, self.time)
+        self.orderBook.input(self.order)
 
     def toString(self):
         return "Order event: time = " + str(self.time) + " from " + self.order.agent.name + "; id " + str(self.order.orderID)

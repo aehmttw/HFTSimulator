@@ -13,6 +13,7 @@ class Order:
         self.amount = amount
         self.price = price
         self.timestamp = timestamp
+        self.receiveTimestamp = timestamp
     
     # A cancel order uses the same orderID as the order it is canceling
 
@@ -33,3 +34,9 @@ class Order:
 
     def __ge__(self, other):
         return self.orderID >= other.orderID
+
+    def toString(self):
+        if self.agent is None:
+            return "agent = None, buy = " + str(self.buy) + ", amount = " + str(self.amount) + ", price = " + str(self.price) + ", time = " + str(self.timestamp)
+        else:
+            return "agent = " + self.agent.name + ", buy = " + str(self.buy) + ", amount = " + str(self.amount) + ", price = " + str(self.price) + ", time = " + str(self.timestamp)

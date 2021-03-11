@@ -24,13 +24,23 @@ class OrderBook:
         self.simulation = simulation
 
     # Adds an order to the order book. Used internally.
-    def _addOrder(self, order: Order, timestamp: float):
-        if order.buy:
-            heapq.heappush(self.buybook, (-order.price, timestamp, order))
-        else:
-            heapq.heappush(self.sellbook, (order.price, timestamp, order))
+    def _addOrder(self, order: Order):      
+        if order.amount <= 0:
+            raise Exception("Order amount is 0!")
 
-    def input(self, order: Order, timestamp: float):
+        #print(order.amount)
+
+        if order.buy:
+            heapq.heappush(self.buybook, (-order.price, order.receiveTimestamp, order))
+        else:
+            heapq.heappush(self.sellbook, (order.price, order.receiveTimestamp, order))
+
+    def input(self, order: Order):
+        #if order.cancel:
+        #    print("Canceling order " + order.toString() + " / " + str(order.receiveTimestamp))
+        #else:
+        #    print("Adding order " + order.toString() + " / " + str(order.receiveTimestamp))
+
         if order.cancel:
             for o in self.sellbook:
                 order2: Order = o[2]
@@ -42,56 +52,71 @@ class OrderBook:
                 if order2.orderID == order.orderID:
                     self.buybook.remove(o)
         else:
-            trades = self.matchOrder(order, timestamp)
+            trades = self.matchOrder(order)
             for trade in trades:
                 if not (self.simulation is None):
                     trade.process() 
                     self.price = trade.price
                 self.trades.append(trade)
-            self.datapoints.append(DataPoint(self, timestamp))
+            self.datapoints.append(DataPoint(self, order.receiveTimestamp))
+        #print(self.toString())
 
     
-    def inputOrder(self, order1: Order, order2: Order, price: float, timestamp: float, trades) -> bool:
-        if order2.price <= order1.price:
-            if order2.amount > order1.amount:
-                trades.append(Trade(order1.agent, order2.agent, order1, order2, price, order1.symbol, order1.amount, timestamp))
-                order2.amount -= order1.amount
-                order1.amount = 0
-                self._addOrder(order2, timestamp)
+    def inputOrder(self, buyOrder: Order, sellOrder: Order, price: float, trades) -> bool:
+        if sellOrder.price <= buyOrder.price:
+            if sellOrder.amount > buyOrder.amount:
+                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.receiveTimestamp, sellOrder.receiveTimestamp)))
+                sellOrder.amount -= buyOrder.amount
+                buyOrder.amount = 0
+
+                if buyOrder.receiveTimestamp > sellOrder.receiveTimestamp:
+                    self._addOrder(sellOrder)
+
+                return buyOrder.receiveTimestamp > sellOrder.receiveTimestamp
+
+            elif sellOrder.amount == buyOrder.amount:
+                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.receiveTimestamp, sellOrder.receiveTimestamp)))
+                sellOrder.amount = 0
+                buyOrder.amount = 0
+
                 return True
             else:
-                trades.append(Trade(order1.agent, order2.agent, order1, order2, price, order1.symbol, order2.amount, timestamp))
-                order1.amount -= order2.amount
-                order2.amount = 0
-                return False
+                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, sellOrder.amount, max(buyOrder.receiveTimestamp, sellOrder.receiveTimestamp)))
+                buyOrder.amount -= sellOrder.amount
+                sellOrder.amount = 0
+
+                if buyOrder.receiveTimestamp < sellOrder.receiveTimestamp:
+                    self._addOrder(buyOrder)
+
+                return buyOrder.receiveTimestamp < sellOrder.receiveTimestamp
         else:
-            self._addOrder(order2, timestamp)
-            self._addOrder(order1, timestamp)
+            self._addOrder(sellOrder)
+            self._addOrder(buyOrder)
             return True   
                 
     # read config file to define latency parameters
 
     # Takes in an order and tries to match it
     # Create list of trade objects (buyer, seller, price, timestamp)
-    def matchOrder(self, order: Order, timestamp: float) -> list: # try to comment
+    def matchOrder(self, order: Order) -> list: # try to comment
         trades: list = list()
         if order.buy: 
             while order.amount > 0: 
                 if len(self.sellbook) > 0:
                     other = heapq.heappop(self.sellbook)[2]
-                    if self.inputOrder(order, other, other.price, timestamp, trades):
+                    if self.inputOrder(order, other, other.price, trades):
                         break
                 else:
-                    self._addOrder(order, timestamp)
+                    self._addOrder(order)
                     break                
         else:
             while order.amount > 0:
                 if len(self.buybook) > 0:
                     other = heapq.heappop(self.buybook)[2]
-                    if self.inputOrder(other, order, other.price, timestamp, trades):
+                    if self.inputOrder(other, order, other.price, trades):
                         break
                 else:
-                    self._addOrder(order, timestamp)
+                    self._addOrder(order)
                     break
 
         if not (self.simulation is None):

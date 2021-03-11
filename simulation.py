@@ -72,14 +72,15 @@ class Simulation:
 
             events += 1
             event = self.eventQueue.nextEvent()
-            
+            #print(event.toString()) 
+
             timestamp = event.time
             oldTime = time
             time = int(event.time / 100)
 
             if time != oldTime:
                 print(time)
-                print(self.orderbooks["A"].toStringShort())
+                #print(self.orderbooks["A"].toStringShort())
 
             if event.time > self.maxTime:
                 break
@@ -87,4 +88,11 @@ class Simulation:
             #print(event.toString())
             event.run()
 
+        #buysell = [0, 0]
+
+        #for agent in self.agents:
+        #    buysell[0] += agent.algorithm.buysell[0]
+        #    buysell[1] += agent.algorithm.buysell[1]
+
+        #print(buysell)
         #print(self.orderbooks["A"].toString())
