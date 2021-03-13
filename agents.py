@@ -12,7 +12,7 @@ class Agent:
         # Symbol -> amount
         self.shares = shares
 
-        self.orderBooks = dict()
+        #self.orderBooks = dict()
         self.sharePrices = dict()
 
         self.algorithm = None
@@ -34,6 +34,8 @@ class Agent:
             agent = CancelingAgent(name, simulation, balance, shares, args)
         elif type == "basicmarketmaker":
             agent = BasicMarketMakerAgent(name, simulation, balance, shares, args)
+        elif type == "regulartrading":
+            agent = RegularTradingAgent(name, simulation, balance, shares, args)
 
         algtype: str = j["algorithm"]
         algargs: dict = j["algorithmargs"]
@@ -48,6 +50,8 @@ class Agent:
             algorithm = AlgorithmRandomLinear(agent, algargs)
         elif algtype == "simplemarketmaker":
             algorithm = AlgorithmSimpleMarketMaker(agent, algargs)
+        elif algtype == "fixedmarketmaker":
+            algorithm = AlgoritmMarketMakerFixed(agent, algargs)
 
         agent.algorithm = algorithm
 
@@ -68,6 +72,16 @@ class Agent:
     def inputData(self, trade: 'Trade', timestamp: float):
         raise NotImplementedError
 
+    def attemptCreateOrder(self, timestamp: float, order: Order, symbol: str) -> bool:
+        if order.buy and self.balance < order.amount * self.sharePrices[symbol]:
+            return False
+        
+        if not order.buy and self.shares[symbol] < order.amount:
+            return False
+
+        self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[symbol]))
+        return True
+
 class BasicAgent(Agent):
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
         super().__init__(name, simulation, balance, shares)
@@ -77,7 +91,7 @@ class BasicAgent(Agent):
         orders = self.algorithm.getOrders(trade.symbol, timestamp)
 
         for order in orders:
-            self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[trade.symbol]))
+            self.attemptCreateOrder(timestamp, order, trade.symbol)
 
 class CancelingAgent(Agent):
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
@@ -94,7 +108,7 @@ class CancelingAgent(Agent):
 
         for order in self.activeOrders:
             if timestamp - order.timestamp >= self.orderLifespan:
-                 self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), self.simulation.makeCancelOrder(self, order.orderID, timestamp), self.simulation.orderbooks[trade.symbol]))
+                self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), self.simulation.makeCancelOrder(self, order.orderID, timestamp), self.simulation.orderbooks[trade.symbol]))
         
         if random.random() >= self.orderChance:
             return
@@ -102,8 +116,8 @@ class CancelingAgent(Agent):
         orders = self.algorithm.getOrders(trade.symbol, timestamp)
         
         for order in orders:
-            self.activeOrders.append(order)
-            self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[trade.symbol]))
+            if self.attemptCreateOrder(timestamp, order, trade.symbol):
+                self.activeOrders.append(order)
         
         self.orderBlockTime = timestamp + self.orderCooldown
 
@@ -124,7 +138,24 @@ class BasicMarketMakerAgent(Agent):
         orders = self.algorithm.getOrders(trade.symbol, timestamp)
 
         for order in orders:
-            self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[trade.symbol]))
+            self.attemptCreateOrder(timestamp, order, trade.symbol)
+class RegularTradingAgent(Agent):
+    def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
+        super().__init__(name, simulation, balance, shares)
+        self.interval = args["interval"]
+        self.simulation.pushEvent(EventScheduleAgent(self.interval, self))
+
+    def inputData(self, trade: 'Trade', timestamp: float):
+        self.sharePrices[trade.symbol] = trade.price
+
+    def inputOrders(self, timestamp: float):
+        self.simulation.pushEvent(EventScheduleAgent(self.interval + timestamp, self))
+
+        for s in self.simulation.orderbooks:
+            orders = self.algorithm.getOrders(s, timestamp)
+
+            for order in orders:
+                self.attemptCreateOrder(timestamp, order, s)
 
 
 # market maker - could schedule events at for self
@@ -185,6 +216,7 @@ class AlgorithmRandomLinear(Algorithm):
 
 # Add another market maker with predefined prices
 # Going negative issue - prevent trading what one does not have
+# data collection
 class AlgorithmSimpleMarketMaker(Algorithm):
     def __init__(self, agent: BasicMarketMakerAgent, args: dict):
         super().__init__(agent)
@@ -208,6 +240,39 @@ class AlgorithmSimpleMarketMaker(Algorithm):
             if self.agent.lastBuy[symbol] + self.distance < self.agent.lastSell[symbol] - self.distance:
                 self.lastSell = Order(self.agent, False, symbol, self.quantity, self.agent.lastSell[symbol] - self.distance, timestamp)
                 orders.append(self.lastSell)
+
+        return orders
+
+class AlgoritmMarketMakerFixed(Algorithm):
+    def __init__(self, agent: BasicMarketMakerAgent, args: dict):
+        super().__init__(agent)
+        self.quantity = args["quantity"]
+        self.lastBuy: Order = None
+        self.lastSell: Order = None
+        self.spread = args["spread"]
+        self.prices = args["prices"]
+        self.priceInterval = args["interval"]
+
+    # returns a list of orders to place
+    def getOrders(self, symbol: str, timestamp: float):
+        orders = list()
+
+        price = 0
+        if timestamp >= (len(self.prices) - 1) * self.priceInterval:
+            price = self.prices[len(self.prices) - 1]
+        else:
+            index = timestamp / self.priceInterval
+            price = self.prices[int(index)] * (1 - (index % 1)) + self.prices[int(index + 1)] * (index % 1)
+
+        if self.lastBuy is not None and self.lastSell is not None:
+            orders.append(self.agent.simulation.makeCancelOrder(self.agent, self.lastBuy.orderID, timestamp))
+            orders.append(self.agent.simulation.makeCancelOrder(self.agent, self.lastSell.orderID, timestamp))
+     
+        self.lastBuy = Order(self.agent, True, symbol, self.quantity, price - self.spread / 2, timestamp)
+        orders.append(self.lastBuy)
+
+        self.lastSell = Order(self.agent, False, symbol, self.quantity, price + self.spread / 2, timestamp)
+        orders.append(self.lastSell)
 
         return orders
 

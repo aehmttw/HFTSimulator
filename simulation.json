@@ -10,7 +10,7 @@
     [ 
         {
             "name": "testagent1",
-            "balance": 10000,
+            "balance": 10000000,
             "type": "canceling",
             "typeargs":
             {
@@ -39,7 +39,7 @@
 
         {
             "name": "testagent2",
-            "balance": 10000,
+            "balance": 10000000,
             "type": "canceling",
             "typeargs":
             {
@@ -68,7 +68,7 @@
 
         {
             "name": "testagent3",
-            "balance": 10000,
+            "balance": 10000000,
             "type": "canceling",
             "typeargs":
             {
@@ -97,7 +97,7 @@
 
         {
             "name": "testagent4",
-            "balance": 10000,
+            "balance": 10000000,
             "type": "canceling",
             "typeargs":
             {
@@ -126,7 +126,7 @@
 
         {
             "name": "testagent5",
-            "balance": 10000,
+            "balance": 10000000,
             "type": "canceling",
             "typeargs":
             {

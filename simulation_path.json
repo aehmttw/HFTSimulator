@@ -1,0 +1,39 @@
+{
+    "symbols": 
+    {
+        "A": 100
+    },
+    
+    "runtime": 8000,
+
+    "agents":
+    [ 
+        {
+            "name": "testagent1",
+            "balance": 1000000,
+            "type": "regulartrading",
+            "typeargs":
+            {
+                "interval": 10
+            },
+            "shares": 
+            {
+                "A": 100
+            },
+            "algorithm": "fixedmarketmaker",
+            "algorithmargs": 
+            {
+                "quantity": 100,
+                "spread": 0.01,
+                "prices": [100, 105, 100, 105],
+                "interval": 1000
+            },
+            "latency": "normal",
+            "latencyargs":
+            {
+                "mean": 0,
+                "deviation": 0
+            }
+        }
+    ]
+}

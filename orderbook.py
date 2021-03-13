@@ -42,15 +42,21 @@ class OrderBook:
         #    print("Adding order " + order.toString() + " / " + str(order.receiveTimestamp))
 
         if order.cancel:
+            success: bool = False
             for o in self.sellbook:
                 order2: Order = o[2]
                 if order2.orderID == order.orderID:
                     self.sellbook.remove(o)
+                    success = True
             
             for o in self.buybook:
                 order2: Order = o[2]
                 if order2.orderID == order.orderID:
                     self.buybook.remove(o)
+                    success = True
+
+            #if not success:
+            #    print(order.orderID)
         else:
             trades = self.matchOrder(order)
             for trade in trades:
@@ -58,6 +64,7 @@ class OrderBook:
                     trade.process() 
                     self.price = trade.price
                 self.trades.append(trade)
+            self.lastOrder = order
             self.datapoints.append(DataPoint(self, order.receiveTimestamp))
         #print(self.toString())
 
@@ -126,17 +133,31 @@ class OrderBook:
 
     def toString(self) -> str:
         s = "Sell orders: \n"
+
+        orders = list()
         
-        for order in self.sellbook:
+        while len(self.sellbook) > 0:
+            order = heapq.heappop(self.sellbook)
+            orders.append(order)
             o: Order = order[2]
-            s += "Price: " + str(o.price) + ", Quantity: " + str(o.amount) + "\n"
+            s += "Price: " + str(o.price) + ", Quantity: " + str(o.amount) + ", Time: " + str(o.timestamp) + " " + str(o.orderID) + "\n" 
+
+        for order in orders:
+            heapq.heappush(self.sellbook, order)
 
         s += "\nBuy orders: \n"
 
-        for order in self.buybook:
-            o: Order = order[2]
-            s += "Price: " + str(o.price) + ", Quantity: " + str(o.amount) + "\n"
+        orders = list()
         
+        while len(self.buybook) > 0:
+            order = heapq.heappop(self.buybook)
+            orders.append(order)
+            o: Order = order[2]
+            s += "Price: " + str(o.price) + ", Quantity: " + str(o.amount) + ", Time: " + str(o.timestamp) + " " + str(o.orderID) + "\n"
+
+        for order in orders:
+            heapq.heappush(self.buybook, order)
+
         return s
     
     def toStringShort(self) -> str:
@@ -257,9 +278,13 @@ class OrderBook:
         times = list()
         data = list()
 
+        gap = 0
         for datapoint in self.datapoints:
+            if datapoint.gap != -1:
+                gap = datapoint.gap
+
             times.append(datapoint.timestamp)
-            data.append(datapoint.gap)
+            data.append(gap)
 
         plot.figure()
         plot.xlabel("time")
@@ -301,7 +326,13 @@ class DataPoint:
     def __init__(self, orderBook: OrderBook, timestamp: float):
         self.price = orderBook.price
         self.timestamp = timestamp
-        self.bookSize = len(orderBook.sellbook) + len(orderBook.buybook)
+        self.bookSize = 0
+
+        for o in orderBook.buybook:
+            self.bookSize += o[2].amount
+
+        for o in orderBook.sellbook:
+            self.bookSize += o[2].amount
 
         if len(orderBook.sellbook) == 0 or len(orderBook.buybook) == 0:
             self.gap = -1
@@ -313,6 +344,16 @@ class DataPoint:
             heapq.heappush(orderBook.buybook, b)
 
             self.gap = (s[0] + b[0])
+            #if self.gap < 0:
+            #    #print(orderBook.prevDesc)
+            #    print(orderBook.toString())
+            #    print(orderBook.lastOrder.toString())
+            #    print(self.toString())
+            #    print(s[2].toString())
+            #    print(b[2].toString())
+                #raise Exception("gap is negative")
+        
+        #orderBook.previousDesc = orderBook.toString()
     
     def toString(self) -> str:
         return str(self.timestamp) + " data point: price = " + str(self.price) + ", book size = " + str(self.bookSize) + ", gap = " + str(self.gap)

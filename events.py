@@ -59,6 +59,14 @@ class EventMarketData(Event):
         else:
             return "Market data event: time = " + str(self.time) + " for " + self.target.name
 
+class EventScheduleAgent(Event):
+    def __init__(self, time: float, agent: 'RegularTradingAgent'):
+        super().__init__(time)
+        self.agent: 'RegularTradingAgent' = agent
+
+    def run(self):
+        self.agent.inputOrders(self.time)
+
 class EventQueue:
     def __init__(self, simulation: 'Simulation'):
         self.simulation = simulation

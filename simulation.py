@@ -34,6 +34,10 @@ class Simulation:
         for s in j["agents"]:
             self.agents.append(Agent.fromJson(s, self))
 
+        for a in self.agents:
+            for s in self.startingPrices:
+                a.sharePrices[s] = self.startingPrices[s]
+
     def broadcastTradeInfo(self, trades):
         for trade in trades:
             self.tradesCount = self.tradesCount + 1
