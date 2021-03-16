@@ -8,7 +8,7 @@ class OrderBook:
 
     # Every agent will have their own order books, representing only the data they have received
     # These separate order books, unlike the main ones, have simulation set to None
-    def __init__(self, simulation: 'Simulation', price: float):
+    def __init__(self, simulation: 'Simulation', price: float, symbol: str):
         # Stores sell side of order book as tuples with price, timestamp, and Order.
         # The lowest sell order is popped first. In the event of a tie, the oldest one should pop first.
         self.sellbook = []
@@ -20,6 +20,7 @@ class OrderBook:
         self.trades = []
         self.datapoints = []
         self.price = price
+        self.symbol = symbol
 
         self.simulation = simulation
 
@@ -304,6 +305,72 @@ class OrderBook:
         plot.ylabel("volatility")
         plot.plot(times, data)   
 
+    def plotBalances(self):
+        times: list = list()
+        data: dict = dict()
+        
+        for datapoint in self.datapoints:
+            times.append(datapoint.timestamp)
+
+            for a in datapoint.agentBalances:
+                if not a.startswith("marketmaker"):
+                    if not (a in data):
+                        data[a] = list()
+
+                    data[a].append(datapoint.agentBalances[a])
+
+        plot.figure()
+        plot.xlabel("time")
+        plot.ylabel("balance")
+        plot.legend(data)
+
+        for a in data:
+            plot.plot(times, data[a])   
+    
+    def plotShares(self):
+        times: list = list()
+        data: dict = dict()
+        
+        for datapoint in self.datapoints:
+            times.append(datapoint.timestamp)
+
+            for a in datapoint.agentShares:
+                if not a.startswith("marketmaker"):
+                    if not (a in data):
+                        data[a] = list()
+
+                    data[a].append(datapoint.agentShares[a])
+
+        plot.figure()
+        plot.xlabel("time")
+        plot.ylabel("shares")
+        plot.legend(data)
+
+        for a in data:
+            plot.plot(times, data[a])   
+
+    def plotNetWorth(self):
+        times: list = list()
+        data: dict = dict()
+        
+        for datapoint in self.datapoints:
+            times.append(datapoint.timestamp)
+
+            for a in datapoint.agentShares:
+                if not a.startswith("marketmaker"):
+                    if not (a in data):
+                        data[a] = list()
+
+                    data[a].append(datapoint.agentShares[a] * datapoint.price + datapoint.agentBalances[a])
+
+        plot.figure()
+        plot.xlabel("time")
+        plot.ylabel("net worth")
+        plot.legend(data)
+
+        for a in data:
+            plot.plot(times, data[a]) 
+
     def calculateVolatility(self, time: float):
         index: int = 0
         for datapoint in self.datapoints:
@@ -322,17 +389,40 @@ class OrderBook:
             datapoint.volatility = numpy.std(price)
             index += 1
 
+    def write(self, file: str):
+        f = open(file, "w")
+        bar: str = "Timestamp,Price,Book Size,Gap"
+
+        for agent in self.simulation.agents:
+            bar += "," + agent.name + " Balance"
+        
+        for agent in self.simulation.agents:
+            bar += agent.name + " Shares"
+
+        f.write(bar + "\n")
+
+        for datapoint in self.datapoints:
+            f.write(datapoint.toCsvLine() + "\n")
+
+        f.close()
+
 class DataPoint:
     def __init__(self, orderBook: OrderBook, timestamp: float):
         self.price = orderBook.price
         self.timestamp = timestamp
         self.bookSize = 0
+        self.agentBalances = dict()
+        self.agentShares = dict()
 
         for o in orderBook.buybook:
             self.bookSize += o[2].amount
 
         for o in orderBook.sellbook:
             self.bookSize += o[2].amount
+
+        for a in orderBook.simulation.agents:
+            self.agentBalances[a.name] = a.balance
+            self.agentShares[a.name] = a.shares[orderBook.symbol]
 
         if len(orderBook.sellbook) == 0 or len(orderBook.buybook) == 0:
             self.gap = -1
@@ -357,6 +447,17 @@ class DataPoint:
     
     def toString(self) -> str:
         return str(self.timestamp) + " data point: price = " + str(self.price) + ", book size = " + str(self.bookSize) + ", gap = " + str(self.gap)
+
+    def toCsvLine(self) -> str:
+        s: str = str(self.timestamp) + "," + str(self.price) + "," + str(self.bookSize) + "," + str(self.gap)
+
+        for a in self.agentBalances:
+            s += "," + str(self.agentBalances[a])
+
+        for a in self.agentShares:
+            s += "," + str(self.agentShares[a])
+
+        return s
 
         
     

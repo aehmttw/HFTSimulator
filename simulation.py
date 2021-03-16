@@ -28,7 +28,7 @@ class Simulation:
         self.maxTime = j["runtime"]
 
         for s in j["symbols"]:
-            self.orderbooks[s] = OrderBook(self, (j["symbols"])[s])
+            self.orderbooks[s] = OrderBook(self, (j["symbols"])[s], s)
             self.startingPrices[s] = (j["symbols"])[s]
 
         for s in j["agents"]:
@@ -76,7 +76,7 @@ class Simulation:
 
             events += 1
             event = self.eventQueue.nextEvent()
-            #print(event.toString()) 
+            #i(event.toString()) 
 
             timestamp = event.time
             oldTime = time
@@ -100,3 +100,4 @@ class Simulation:
 
         #print(buysell)
         #print(self.orderbooks["A"].toString())
+    

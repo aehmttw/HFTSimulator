@@ -20,7 +20,7 @@
             },
             "shares": 
             {
-                "A": 100
+                "A": 10000
             },
             "algorithm": "randomnormal",
             "algorithmargs": 
@@ -49,7 +49,7 @@
             },
             "shares": 
             {
-                "A": 100
+                "A": 10000
             },
             "algorithm": "randomnormal",
             "algorithmargs": 
@@ -78,7 +78,7 @@
             },
             "shares": 
             {
-                "A": 100
+                "A": 10000
             },
             "algorithm": "randomnormal",
             "algorithmargs": 
@@ -107,7 +107,7 @@
             },
             "shares": 
             {
-                "A": 100
+                "A": 10000
             },
             "algorithm": "randomnormal",
             "algorithmargs": 
@@ -136,7 +136,7 @@
             },
             "shares": 
             {
-                "A": 100
+                "A": 10000
             },
             "algorithm": "randomnormal",
             "algorithmargs": 

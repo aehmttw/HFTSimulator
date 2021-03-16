@@ -15,7 +15,7 @@ class Trade:
 
     def process(self):
         self.buyer.shares[self.symbol] += self.amount
-        self.seller.shares[self.symbol] += self.amount
+        self.seller.shares[self.symbol] -= self.amount
         self.buyer.balance -= self.amount * self.price
         self.seller.balance += self.amount * self.price
         self.completed = True
