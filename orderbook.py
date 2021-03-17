@@ -397,7 +397,7 @@ class OrderBook:
             bar += "," + agent.name + " Balance"
         
         for agent in self.simulation.agents:
-            bar += agent.name + " Shares"
+            bar += "," + agent.name + " Shares"
 
         f.write(bar + "\n")
 

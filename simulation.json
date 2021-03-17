@@ -4,7 +4,7 @@
         "A": 100
     },
     
-    "runtime": 8000,
+    "runtime": 80000,
 
     "agents":
     [ 
@@ -16,7 +16,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 100
+                "ordercooldown": 150
             },
             "shares": 
             {
@@ -45,7 +45,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 100
+                "ordercooldown": 150
             },
             "shares": 
             {
@@ -74,7 +74,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 100
+                "ordercooldown": 150
             },
             "shares": 
             {
@@ -103,7 +103,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 100
+                "ordercooldown": 150
             },
             "shares": 
             {
@@ -132,7 +132,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 100
+                "ordercooldown": 150
             },
             "shares": 
             {

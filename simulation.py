@@ -9,6 +9,7 @@ class Simulation:
         self.orderbooks = dict()
         self.startingPrices = dict()
         self.maxTime = 0
+        self.debugPrint = False
 
         if file is not None:
             self.loadFile(file)
@@ -82,7 +83,7 @@ class Simulation:
             oldTime = time
             time = int(event.time / 100)
 
-            if time != oldTime:
+            if time != oldTime and self.debugPrint:
                 print(time)
                 #print(self.orderbooks["A"].toStringShort())
 
