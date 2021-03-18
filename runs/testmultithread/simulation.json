@@ -151,34 +151,6 @@
                 "mean": 100,
                 "deviation": 20
             }
-        },
-
-        {
-            "name": "marketmaker",
-            "balance": 100000000000,
-            "type": "regulartrading",
-            "typeargs":
-            {
-                "interval": 10
-            },
-            "shares": 
-            {
-                "A": 10000000
-            },
-            "algorithm": "fixedmarketmaker",
-            "algorithmargs": 
-            {
-                "quantity": 100,
-                "spread": 0.01,
-                "prices": [100, 105, 110, 105, 100],
-                "interval": 20000
-            },
-            "latency": "normal",
-            "latencyargs":
-            {
-                "mean": 0,
-                "deviation": 0
-            }
         }
     ]
 }
