@@ -37,12 +37,30 @@ class EventOrder(Event):
         self.order = order
         self.orderBook = orderBook
         self.order.receiveTimestamp = time
-    
+        self.order.processTimestamp = time
+
     def run(self):
-        self.orderBook.input(self.order)
+        if self.time - self.orderBook.lastOrderTime >= 1:
+            self.orderBook.lastOrderTime = self.time
+            self.orderBook.input(self.order)
+        else:
+            self.orderBook.simulation.pushEvent(EventOrderQueued(self.orderBook.lastOrderTime + 1, self))
+            self.orderBook.lastOrderTime += 1
 
     def toString(self):
         return "Order event: time = " + str(self.time) + " from " + self.order.agent.name + "; id " + str(self.order.orderID)
+
+class EventOrderQueued(Event):
+    def __init__(self, time: float, event: EventOrder):
+        super().__init__(time)
+        self.event = event
+        self.event.order.processTimestamp = time
+
+    def run(self):
+        self.event.orderBook.input(self.event.order)
+
+    def toString(self):
+        return "Order queued event: time = " + str(self.time) + " from " + self.order.agent.name + "; id " + str(self.order.orderID)
 
 class EventMarketData(Event):
     def __init__(self, time: float, trade: 'Trade', target: 'Agent'):

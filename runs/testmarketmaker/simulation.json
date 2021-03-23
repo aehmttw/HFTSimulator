@@ -159,7 +159,7 @@
             "type": "regulartrading",
             "typeargs":
             {
-                "interval": 10
+                "interval": 20
             },
             "shares": 
             {
@@ -176,8 +176,8 @@
             "latency": "normal",
             "latencyargs":
             {
-                "mean": 0,
-                "deviation": 0
+                "mean": 50,
+                "deviation": 7
             }
         }
     ]
