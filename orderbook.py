@@ -21,11 +21,15 @@ class OrderBook:
         self.datapoints = []
         self.price = price
         self.symbol = symbol
+        self.lastOrderTime = 0
+        self.lastUnqueueTime = 0
 
         self.simulation = simulation
 
     # Adds an order to the order book. Used internally.
     def _addOrder(self, order: Order):      
+        self.lastUnqueueTime = order.receiveTimestamp
+
         if order.amount <= 0:
             raise Exception("Order amount is 0!")
 
@@ -40,7 +44,8 @@ class OrderBook:
         #if order.cancel:
         #    print("Canceling order " + order.toString() + " / " + str(order.receiveTimestamp))
         #else:
-        #    print("Adding order " + order.toString() + " / " + str(order.receiveTimestamp))
+        #if not order.cancel:
+        #    print("Adding order " + order.toString() + " / " + str(order.processTimestamp))
 
         if order.cancel:
             success: bool = False
@@ -66,14 +71,14 @@ class OrderBook:
                     self.price = trade.price
                 self.trades.append(trade)
             self.lastOrder = order
-            self.datapoints.append(DataPoint(self, order.receiveTimestamp))
+            self.datapoints.append(DataPoint(self, order.processTimestamp))
         #print(self.toString())
 
     
     def inputOrder(self, buyOrder: Order, sellOrder: Order, price: float, trades) -> bool:
         if sellOrder.price <= buyOrder.price:
             if sellOrder.amount > buyOrder.amount:
-                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.receiveTimestamp, sellOrder.receiveTimestamp)))
+                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.processTimestamp, sellOrder.processTimestamp)))
                 sellOrder.amount -= buyOrder.amount
                 buyOrder.amount = 0
 
@@ -83,13 +88,13 @@ class OrderBook:
                 return buyOrder.receiveTimestamp > sellOrder.receiveTimestamp
 
             elif sellOrder.amount == buyOrder.amount:
-                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.receiveTimestamp, sellOrder.receiveTimestamp)))
+                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.processTimestamp, sellOrder.processTimestamp)))
                 sellOrder.amount = 0
                 buyOrder.amount = 0
 
                 return True
             else:
-                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, sellOrder.amount, max(buyOrder.receiveTimestamp, sellOrder.receiveTimestamp)))
+                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, sellOrder.amount, max(buyOrder.processTimestamp, sellOrder.processTimestamp)))
                 buyOrder.amount -= sellOrder.amount
                 sellOrder.amount = 0
 
@@ -292,6 +297,19 @@ class OrderBook:
         plot.ylabel("gap")
         plot.plot(times, data)   
 
+    def plotQueueSize(self):
+        times = list()
+        data = list()
+
+        for datapoint in self.datapoints:
+            times.append(datapoint.timestamp)
+            data.append(datapoint.queueSize)
+
+        plot.figure()
+        plot.xlabel("time")
+        plot.ylabel("queue size")
+        plot.plot(times, data)   
+
     def plotVolatility(self):
         times = list()
         data = list()
@@ -394,7 +412,7 @@ class OrderBook:
         bar: str = "Timestamp,Price,Book Size,Gap"
 
         for agent in self.simulation.agents:
-            bar += "," + agent.name + " Balance"
+            bar += "," + agent.name + " Cash"
         
         for agent in self.simulation.agents:
             bar += "," + agent.name + " Shares"
@@ -411,6 +429,8 @@ class DataPoint:
         self.price = orderBook.price
         self.timestamp = timestamp
         self.bookSize = 0
+        self.queueSize = timestamp - orderBook.lastUnqueueTime
+        print(orderBook.lastUnqueueTime)
         self.agentBalances = dict()
         self.agentShares = dict()
 

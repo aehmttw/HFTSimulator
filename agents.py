@@ -46,6 +46,8 @@ class Agent:
             algorithm = AlgorithmFixedPrice(agent, algargs)
         elif algtype == "randomnormal":
             algorithm = AlgorithmRandomNormal(agent, algargs)
+        elif algtype == "randomlognormal":
+            algorithm = AlgorithmRandomLogNormal(agent, algargs)
         elif algtype == "randomlinear":
             algorithm = AlgorithmRandomLinear(agent, algargs)
         elif algtype == "simplemarketmaker":
@@ -139,6 +141,7 @@ class BasicMarketMakerAgent(Agent):
 
         for order in orders:
             self.attemptCreateOrder(timestamp, order, trade.symbol)
+
 class RegularTradingAgent(Agent):
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
         super().__init__(name, simulation, balance, shares)
@@ -197,6 +200,22 @@ class AlgorithmRandomNormal(Algorithm):
         buy: bool = random.randint(1, 2) == 1
         quantity: int = random.randint(self.quantityMin, self.quantityMax)
         order = Order(self.agent, buy, symbol, quantity, numpy.random.normal(price, self.spread * price), timestamp)
+        return [order]
+
+class AlgorithmRandomLogNormal(Algorithm):
+    def __init__(self, agent: Agent, args: dict):
+        super().__init__(agent)
+        self.spread = args["spread"]
+        self.quantityMin = args["quantitymin"]
+        self.quantityMax = args["quantitymax"]
+        self.buyChance = args["buychance"]
+
+    # returns a list of orders to place
+    def getOrders(self, symbol: str, timestamp: float):
+        price: float = self.agent.sharePrices[symbol]
+        buy: bool = random.random() < self.buyChance
+        quantity: int = random.randint(self.quantityMin, self.quantityMax)
+        order = Order(self.agent, buy, symbol, quantity, price * numpy.random.lognormal(0, self.spread), timestamp)
         return [order]
 
 class AlgorithmRandomLinear(Algorithm):

@@ -7,8 +7,6 @@ from simulation import *
 from tests import *
 import multiprocessing
 
-
-
 def runSimulation(name: str, num: int):
     print("Running simulation " + str(num))
     simulation = Simulation("runs/" + name + "/simulation.json")
@@ -17,7 +15,7 @@ def runSimulation(name: str, num: int):
     print("Finished simulation " + str(num))
 
 def main():
-    name: str = "testmultithread"
+    name: str = "test"
     for i in range(100):
         p = multiprocessing.Process(target=runSimulation, args=(name, i,))
         p.start()

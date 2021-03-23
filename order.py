@@ -14,6 +14,7 @@ class Order:
         self.price = price
         self.timestamp = timestamp
         self.receiveTimestamp = timestamp
+        self.processTimestamp = timestamp
     
     # A cancel order uses the same orderID as the order it is canceling
 
