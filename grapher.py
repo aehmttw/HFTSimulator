@@ -34,8 +34,12 @@ class Grapher:
         current = np.zeros(100)
 
         timestamps = list()
-        averages = list()
-        deviations = list()
+        #averages = list()
+        #deviations = list()
+
+        medians = list()
+        p5 = list()
+        p95 = list() 
 
         while True: # might be worth optimizing, leave comments to explain how this works/what it does
             time += interval
@@ -57,21 +61,26 @@ class Grapher:
                 currentVals[i] = dataFrame.loc[current[i], property]
                 i += 1
             
-            averages.append(value / i)
-            deviations.append(np.std(currentVals))
+            #averages.append(value / i)
+            #deviations.append(np.std(currentVals))
+            
+            sorted = np.sort(currentVals)
+            medians.append((sorted[49] + sorted[50]) / 2)
+            p5.append(sorted[4])
+            p95.append(sorted[94])
+
             timestamps.append(time)
 
             if stop:
                 break
         
-        plotter.plot(timestamps, averages)
+        plotter.plot(timestamps, medians)
+        plotter.plot(timestamps, p5, color="#7f7fff")
+        plotter.plot(timestamps, p95, color="#7f7fff")
 
-        upper = list()
-        lower = list()
+    def saveAllAvg(self, interval):
+        for key in self.data[0].keys():
+            if key != "Timestamp":
+                self.graphAvg(key, interval)
+                plotter.savefig(self.dir + "-" + key + ".png")
 
-        for i in range(len(deviations)):
-            upper.append(deviations[i] + averages[i])
-            lower.append(-deviations[i] + averages[i])
-        
-        plotter.plot(timestamps, upper, color="#7f7fff")
-        plotter.plot(timestamps, lower, color="#7f7fff")
