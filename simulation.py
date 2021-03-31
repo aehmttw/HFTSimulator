@@ -73,6 +73,7 @@ class Simulation:
                     t = min(a.orderBlockTime, t)
                 
                 timestamp = t
+                continue
 
             events += 1
             event = self.eventQueue.nextEvent()
@@ -80,7 +81,7 @@ class Simulation:
 
             timestamp = event.time
             oldTime = time
-            time = int(event.time / 100)
+            time = int(event.time / self.maxTime * 100)
 
             if time != oldTime and self.debugPrint:
                 print(time)

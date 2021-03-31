@@ -11,6 +11,7 @@ def runSimulation(name: str, num: int):
     print("Running simulation " + str(num))
     simulation = Simulation("runs/" + name + "/simulation.json")
     simulation.run()
+    simulation.orderbooks["A"].calculateVolatility(20000)
     simulation.orderbooks["A"].write("runs/" + name + "/output" + str(num) + ".csv")
     print("Finished simulation " + str(num))
 

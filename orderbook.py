@@ -28,8 +28,6 @@ class OrderBook:
 
     # Adds an order to the order book. Used internally.
     def _addOrder(self, order: Order):      
-        self.lastUnqueueTime = order.receiveTimestamp
-
         if order.amount <= 0:
             raise Exception("Order amount is 0!")
 
@@ -46,24 +44,30 @@ class OrderBook:
         #else:
         #if not order.cancel:
         #    print("Adding order " + order.toString() + " / " + str(order.processTimestamp))
+        self.lastUnqueueTime = order.receiveTimestamp
 
         if order.cancel:
             success: bool = False
             for o in self.sellbook:
                 order2: Order = o[2]
                 if order2.orderID == order.orderID:
+                    order2.agent.canceledOrders += order2.amount
                     self.sellbook.remove(o)
                     success = True
             
             for o in self.buybook:
                 order2: Order = o[2]
                 if order2.orderID == order.orderID:
+                    order2.agent.canceledOrders += order2.amount
                     self.buybook.remove(o)
                     success = True
 
             #if not success:
             #    print(order.orderID)
         else:
+            if order.agent is not None:
+                order.agent.sentOrders += order.amount
+    
             trades = self.matchOrder(order)
             for trade in trades:
                 if not (self.simulation is None):
@@ -409,13 +413,22 @@ class OrderBook:
 
     def write(self, file: str):
         f = open(file, "w")
-        bar: str = "Timestamp,Price,Book Size,Gap"
+        bar: str = "Timestamp,Price,Book Size,Gap,Volatility,Queue Size"
 
         for agent in self.simulation.agents:
             bar += "," + agent.name + " Cash"
         
         for agent in self.simulation.agents:
             bar += "," + agent.name + " Shares"
+
+        for agent in self.simulation.agents:
+            bar += "," + agent.name + " Orders/Sent"
+        
+        for agent in self.simulation.agents:
+            bar += "," + agent.name + " Orders/Matched"
+
+        for agent in self.simulation.agents:
+            bar += "," + agent.name + " Orders/Canceled"
 
         f.write(bar + "\n")
 
@@ -430,9 +443,11 @@ class DataPoint:
         self.timestamp = timestamp
         self.bookSize = 0
         self.queueSize = timestamp - orderBook.lastUnqueueTime
-        print(orderBook.lastUnqueueTime)
         self.agentBalances = dict()
         self.agentShares = dict()
+        self.agentOrdersSent = dict()
+        self.agentOrdersMatched = dict()
+        self.agentOrdersCanceled = dict()
 
         for o in orderBook.buybook:
             self.bookSize += o[2].amount
@@ -440,9 +455,13 @@ class DataPoint:
         for o in orderBook.sellbook:
             self.bookSize += o[2].amount
 
-        for a in orderBook.simulation.agents:
-            self.agentBalances[a.name] = a.balance
-            self.agentShares[a.name] = a.shares[orderBook.symbol]
+        if orderBook.simulation is not None:
+            for a in orderBook.simulation.agents:
+                self.agentBalances[a.name] = a.balance
+                self.agentShares[a.name] = a.shares[orderBook.symbol]
+                self.agentOrdersSent[a.name] = a.sentOrders
+                self.agentOrdersMatched[a.name] = a.matchedOrders
+                self.agentOrdersCanceled[a.name] = a.canceledOrders
 
         if len(orderBook.sellbook) == 0 or len(orderBook.buybook) == 0:
             self.gap = -1
@@ -469,13 +488,22 @@ class DataPoint:
         return str(self.timestamp) + " data point: price = " + str(self.price) + ", book size = " + str(self.bookSize) + ", gap = " + str(self.gap)
 
     def toCsvLine(self) -> str:
-        s: str = str(self.timestamp) + "," + str(self.price) + "," + str(self.bookSize) + "," + str(self.gap)
+        s: str = str(self.timestamp) + "," + str(self.price) + "," + str(self.bookSize) + "," + str(self.gap) + "," + str(self.volatility) + "," + str(self.queueSize)
 
         for a in self.agentBalances:
             s += "," + str(self.agentBalances[a])
 
         for a in self.agentShares:
             s += "," + str(self.agentShares[a])
+
+        for a in self.agentOrdersSent:
+            s += "," + str(self.agentOrdersSent[a])
+
+        for a in self.agentOrdersMatched:
+            s += "," + str(self.agentOrdersMatched[a])
+
+        for a in self.agentOrdersSent:
+            s += "," + str(self.agentOrdersCanceled[a])
 
         return s
 

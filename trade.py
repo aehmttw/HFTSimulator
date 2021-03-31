@@ -18,5 +18,7 @@ class Trade:
         self.seller.shares[self.symbol] -= self.amount
         self.buyer.balance -= self.amount * self.price
         self.seller.balance += self.amount * self.price
+        self.buyer.matchedOrders += self.amount
+        self.seller.matchedOrders += self.amount
         self.completed = True
 

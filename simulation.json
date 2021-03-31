@@ -4,7 +4,7 @@
         "A": 100
     },
     
-    "runtime": 8000,
+    "runtime": 100000,
 
     "agents":
     [ 
@@ -15,8 +15,8 @@
             "typeargs":
             {
                 "orderlifespan": 500,
-                "orderchance": 1,
-                "ordercooldown": 20
+                "orderchance": 0.4,
+                "ordercooldown": 200
             },
             "shares": 
             {
@@ -45,8 +45,8 @@
             "typeargs":
             {
                 "orderlifespan": 500,
-                "orderchance": 1,
-                "ordercooldown": 20
+                "orderchance": 0.4,
+                "ordercooldown": 200
             },
             "shares": 
             {
@@ -75,8 +75,8 @@
             "typeargs":
             {
                 "orderlifespan": 500,
-                "orderchance": 1,
-                "ordercooldown": 20
+                "orderchance": 0.4,
+                "ordercooldown": 200
             },
             "shares": 
             {
@@ -105,8 +105,8 @@
             "typeargs":
             {
                 "orderlifespan": 500,
-                "orderchance": 1,
-                "ordercooldown": 20
+                "orderchance": 0.4,
+                "ordercooldown": 200
             },
             "shares": 
             {
@@ -135,8 +135,8 @@
             "typeargs":
             {
                 "orderlifespan": 500,
-                "orderchance": 1,
-                "ordercooldown": 20
+                "orderchance": 0.4,
+                "ordercooldown": 200
             },
             "shares": 
             {

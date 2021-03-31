@@ -8,7 +8,11 @@ class Agent:
         self.name = name
         self.simulation = simulation
         self.orderBlockTime = -1
-        
+
+        self.sentOrders = 0
+        self.canceledOrders = 0
+        self.matchedOrders = 0
+
         # Symbol -> amount
         self.shares = shares
 
@@ -199,7 +203,7 @@ class AlgorithmRandomNormal(Algorithm):
         price: float = self.agent.sharePrices[symbol]
         buy: bool = random.randint(1, 2) == 1
         quantity: int = random.randint(self.quantityMin, self.quantityMax)
-        order = Order(self.agent, buy, symbol, quantity, numpy.random.normal(price, self.spread * price), timestamp)
+        order = Order(self.agent, buy, symbol, quantity, round(numpy.random.normal(price, self.spread * price), 2), timestamp)
         return [order]
 
 class AlgorithmRandomLogNormal(Algorithm):
@@ -215,7 +219,7 @@ class AlgorithmRandomLogNormal(Algorithm):
         price: float = self.agent.sharePrices[symbol]
         buy: bool = random.random() < self.buyChance
         quantity: int = random.randint(self.quantityMin, self.quantityMax)
-        order = Order(self.agent, buy, symbol, quantity, price * numpy.random.lognormal(0, self.spread), timestamp)
+        order = Order(self.agent, buy, symbol, quantity, round(price * numpy.random.lognormal(0, self.spread), 2), timestamp)
         return [order]
 
 class AlgorithmRandomLinear(Algorithm):
@@ -230,7 +234,7 @@ class AlgorithmRandomLinear(Algorithm):
         price: float = self.agent.sharePrices[symbol]
         buy: bool = random.randint(1, 2) == 1
         quantity: int = random.randint(self.quantityMin, self.quantityMax)
-        order = Order(self.agent, buy, symbol, quantity, ((random.random() * 2 - 1) * self.spread + 1) * price, timestamp)
+        order = Order(self.agent, buy, symbol, quantity, round(((random.random() * 2 - 1) * self.spread + 1) * price, 2), timestamp)
         return [order]
 
 # Add another market maker with predefined prices
@@ -292,6 +296,9 @@ class AlgoritmMarketMakerFixed(Algorithm):
 
         self.lastSell = Order(self.agent, False, symbol, self.quantity, price + self.spread / 2, timestamp)
         orders.append(self.lastSell)
+
+        orders.append(Order(self.agent, True, symbol, 1, price, timestamp))
+        orders.append(Order(self.agent, False, symbol, 1, price, timestamp))
 
         return orders
 
