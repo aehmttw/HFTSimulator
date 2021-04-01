@@ -4,7 +4,7 @@
         "A": 100
     },
     
-    "runtime": 100000,
+    "runtime": 1000000,
 
     "agents":
     [ 
@@ -119,7 +119,7 @@
                 "buychance": 0.5
             },
             "latency": "normal",
-            "latencyargs":
+            "latencyargs": 
             {
                 "mean": 100,
                 "deviation": 20
