@@ -4,7 +4,7 @@
         "A": 100
     },
     
-    "runtime": 100000,
+    "runtime": 1000000,
 
     "agents":
     [ 

@@ -54,6 +54,8 @@ class Agent:
             algorithm = AlgorithmRandomLogNormal(agent, algargs)
         elif algtype == "randomlinear":
             algorithm = AlgorithmRandomLinear(agent, algargs)
+        elif algtype == "buylowsellhigh":
+            algorithm = AlgorithmBuyLowSellHigh(agent, algargs)
         elif algtype == "simplemarketmaker":
             algorithm = AlgorithmSimpleMarketMaker(agent, algargs)
         elif algtype == "fixedmarketmaker":
@@ -235,6 +237,30 @@ class AlgorithmRandomLinear(Algorithm):
         buy: bool = random.randint(1, 2) == 1
         quantity: int = random.randint(self.quantityMin, self.quantityMax)
         order = Order(self.agent, buy, symbol, quantity, round(((random.random() * 2 - 1) * self.spread + 1) * price, 2), timestamp)
+        return [order]
+
+class AlgorithmBuyLowSellHigh(Algorithm):
+    def __init__(self, agent: Agent, args: dict):
+        super().__init__(agent)
+        self.buyThreshold = args["buythreshold"]
+        self.sellThreshold = args["sellthreshold"]
+        self.quantityMin = args["quantitymin"]
+        self.quantityMax = args["quantitymax"]
+
+    # returns a list of orders to place
+    def getOrders(self, symbol: str, timestamp: float):
+        price: float = self.agent.sharePrices[symbol]
+        
+        buy = False
+        if price <= self.buyThreshold:
+            buy = True
+        elif price >= self.sellThreshold:
+            buy = False
+        else:
+            return []
+
+        quantity: int = random.randint(self.quantityMin, self.quantityMax)
+        order = Order(self.agent, buy, symbol, quantity, round(price, 2), timestamp)
         return [order]
 
 # Add another market maker with predefined prices

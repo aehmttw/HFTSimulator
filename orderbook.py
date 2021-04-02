@@ -72,6 +72,12 @@ class OrderBook:
             for trade in trades:
                 if not (self.simulation is None):
                     trade.process() 
+
+                    #if abs(trade.price - self.price) > 10:
+                    #    print(str(self.price) + " " + str(trade.price))
+                    #    print(trade.buyOrder.toString())
+                    #    print(trade.sellOrder.toString())
+
                     self.price = trade.price
                 self.trades.append(trade)
             self.lastOrder = order
