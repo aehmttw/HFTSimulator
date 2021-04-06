@@ -9,12 +9,40 @@
     "agents":
     [ 
         {
+            "name": "profitableagent",
+            "balance": 10000000,
+            "type": "recording",
+            "typeargs":
+            {
+                "orderlifespan": 5000,
+                "orderchance": 1,
+                "timeinterval": 50000
+            },
+            "shares": 
+            {
+                "A": 10000
+            },
+            "algorithm": "meanreversion",
+            "algorithmargs": 
+            {
+                "quantitymin": 1,
+                "quantitymax": 100
+            },
+            "latency": "normal",
+            "latencyargs":
+            {
+                "mean": 100,
+                "deviation": 20
+            }
+        },
+
+        {
             "name": "testagent1",
             "balance": 10000000,
             "type": "canceling",
             "typeargs":
             {
-                "orderlifespan": 500,
+                "orderlifespan": 5000,
                 "orderchance": 0.4,
                 "ordercooldown": 200
             },
@@ -44,7 +72,7 @@
             "type": "canceling",
             "typeargs":
             {
-                "orderlifespan": 500,
+                "orderlifespan": 5000,
                 "orderchance": 0.4,
                 "ordercooldown": 200
             },
@@ -74,7 +102,7 @@
             "type": "canceling",
             "typeargs":
             {
-                "orderlifespan": 500,
+                "orderlifespan": 5000,
                 "orderchance": 0.4,
                 "ordercooldown": 200
             },
@@ -104,7 +132,7 @@
             "type": "canceling",
             "typeargs":
             {
-                "orderlifespan": 500,
+                "orderlifespan": 5000,
                 "orderchance": 0.4,
                 "ordercooldown": 200
             },
@@ -134,7 +162,7 @@
             "type": "canceling",
             "typeargs":
             {
-                "orderlifespan": 500,
+                "orderlifespan": 5000,
                 "orderchance": 0.4,
                 "ordercooldown": 200
             },

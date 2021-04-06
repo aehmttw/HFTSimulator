@@ -95,8 +95,8 @@ class Grapher:
                     self.graphAvg(key, interval)
                     plotter.savefig(self.dir + "-" + key + ".png")
 
-        colors = ["#0000ff", "#00ff00", "#ff0000"]
-        colors2 = ["#7f7fff", "#7fff7f", "#ff7f7f"]
+        colors = ["#0000ff", "#00ff00", "#ff0000", "#ff00ff", "#00ffff", "#ffff00", "#000000"]
+        colors2 = ["#7f7fff", "#7fff7f", "#ff7f7f", "#ff7fff", "#7fffff", "#ffff7f", "#7f7f7f"]
 
         for key in groups:
             plotter.figure()

@@ -26,8 +26,8 @@
             "algorithmargs": 
             {
                 "quantitymin": 1,
-                "quantitymax": 97,
-                "buythreshold": 0,
+                "quantitymax": 100,
+                "buythreshold": 97,
                 "sellthreshold": 103
             },
             "latency": "normal",

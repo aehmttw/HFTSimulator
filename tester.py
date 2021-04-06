@@ -16,7 +16,7 @@ def runSimulation(name: str, num: int):
     print("Finished simulation " + str(num))
 
 def main():
-    name: str = "testbuylowsellhigh"
+    name: str = "testmeanreversion"
     for i in range(100):
         p = multiprocessing.Process(target=runSimulation, args=(name, i,))
         p.start()

@@ -4,7 +4,7 @@
         "A": 100
     },
     
-    "runtime": 80000,
+    "runtime": 1000000,
 
     "agents":
     [ 
@@ -16,7 +16,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 150
+                "ordercooldown": 100
             },
             "shares": 
             {
@@ -27,7 +27,8 @@
             {
                 "quantitymin": 1,
                 "quantitymax": 100,
-                "spread": 0.01
+                "spread": 0.01,
+                "buychance": 0.5
             },
             "latency": "normal",
             "latencyargs":
@@ -45,7 +46,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 150
+                "ordercooldown": 100
             },
             "shares": 
             {
@@ -56,7 +57,8 @@
             {
                 "quantitymin": 1,
                 "quantitymax": 100,
-                "spread": 0.01
+                "spread": 0.01,
+                "buychance": 0.5
             },
             "latency": "normal",
             "latencyargs":
@@ -74,7 +76,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 150
+                "ordercooldown": 100
             },
             "shares": 
             {
@@ -85,7 +87,8 @@
             {
                 "quantitymin": 1,
                 "quantitymax": 100,
-                "spread": 0.01
+                "spread": 0.01,
+                "buychance": 0.5
             },
             "latency": "normal",
             "latencyargs":
@@ -103,7 +106,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 150
+                "ordercooldown": 100
             },
             "shares": 
             {
@@ -114,7 +117,8 @@
             {
                 "quantitymin": 1,
                 "quantitymax": 100,
-                "spread": 0.01
+                "spread": 0.01,
+                "buychance": 0.5
             },
             "latency": "normal",
             "latencyargs":
@@ -132,7 +136,7 @@
             {
                 "orderlifespan": 500,
                 "orderchance": 0.4,
-                "ordercooldown": 150
+                "ordercooldown": 100
             },
             "shares": 
             {
@@ -143,7 +147,8 @@
             {
                 "quantitymin": 1,
                 "quantitymax": 100,
-                "spread": 0.01
+                "spread": 0.01,
+                "buychance": 0.5
             },
             "latency": "normal",
             "latencyargs":

@@ -422,10 +422,13 @@ class OrderBook:
         bar: str = "Timestamp,Price,Book Size,Gap,Volatility,Queue Size"
 
         for agent in self.simulation.agents:
-            bar += "," + agent.name + " Cash"
+            bar += ",Cash/" + agent.name
         
         for agent in self.simulation.agents:
-            bar += "," + agent.name + " Shares"
+            bar += ",Shares/" + agent.name
+
+        for agent in self.simulation.agents:
+            bar += ",Net Worth/" + agent.name
 
         for agent in self.simulation.agents:
             bar += "," + agent.name + " Orders/Sent"
@@ -501,6 +504,9 @@ class DataPoint:
 
         for a in self.agentShares:
             s += "," + str(self.agentShares[a])
+
+        for a in self.agentShares:
+            s += "," + str(self.agentShares[a] * self.price + self.agentBalances[a])
 
         for a in self.agentOrdersSent:
             s += "," + str(self.agentOrdersSent[a])

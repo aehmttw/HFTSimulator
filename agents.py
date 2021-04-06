@@ -36,6 +36,8 @@ class Agent:
             agent = BasicAgent(name, simulation, balance, shares, args)
         elif type == "canceling":
             agent = CancelingAgent(name, simulation, balance, shares, args)
+        elif type == "recording":
+            agent = RecordingAgent(name, simulation, balance, shares, args)
         elif type == "basicmarketmaker":
             agent = BasicMarketMakerAgent(name, simulation, balance, shares, args)
         elif type == "regulartrading":
@@ -56,6 +58,8 @@ class Agent:
             algorithm = AlgorithmRandomLinear(agent, algargs)
         elif algtype == "buylowsellhigh":
             algorithm = AlgorithmBuyLowSellHigh(agent, algargs)
+        elif algtype == "meanreversion":
+            algorithm = AlgorithmMeanReversion(agent, algargs)
         elif algtype == "simplemarketmaker":
             algorithm = AlgorithmSimpleMarketMaker(agent, algargs)
         elif algtype == "fixedmarketmaker":
@@ -129,6 +133,41 @@ class CancelingAgent(Agent):
         
         self.orderBlockTime = timestamp + self.orderCooldown
 
+class RecordingAgent(Agent):
+    def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
+        super().__init__(name, simulation, balance, shares)
+        self.activeOrders = list()
+        self.orderLifespan = args["orderlifespan"]
+        self.orderChance = args["orderchance"]
+        self.timeInterval = args["timeinterval"]
+
+        self.pastPrices = list()
+        self.pastPriceTimes = list()
+
+        #todo - make this block for multiple books
+
+    def inputData(self, trade: 'Trade', timestamp: float):
+        self.sharePrices[trade.symbol] = trade.price
+        self.pastPrices.append(trade.price)
+        self.pastPriceTimes.append(timestamp)
+
+        while len(self.pastPriceTimes) > 0 and timestamp - self.pastPriceTimes[0] > self.timeInterval:
+            self.pastPriceTimes.remove(self.pastPriceTimes[0])
+            self.pastPrices.remove(self.pastPrices[0])
+
+        for order in self.activeOrders:
+            if timestamp - order.timestamp >= self.orderLifespan:
+                self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), self.simulation.makeCancelOrder(self, order.orderID, timestamp), self.simulation.orderbooks[trade.symbol]))
+        
+        if random.random() >= self.orderChance:
+            return
+
+        orders = self.algorithm.getOrders(trade.symbol, timestamp)
+        
+        for order in orders:
+            if self.attemptCreateOrder(timestamp, order, trade.symbol):
+                self.activeOrders.append(order)
+        
 class BasicMarketMakerAgent(Agent):
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
         super().__init__(name, simulation, balance, shares)
@@ -259,6 +298,30 @@ class AlgorithmBuyLowSellHigh(Algorithm):
         else:
             return []
 
+        quantity: int = random.randint(self.quantityMin, self.quantityMax)
+        order = Order(self.agent, buy, symbol, quantity, round(price, 2), timestamp)
+        return [order]
+
+class AlgorithmMeanReversion(Algorithm):
+    def __init__(self, agent: Agent, args: dict):
+        super().__init__(agent)
+        self.quantityMin = args["quantitymin"]
+        self.quantityMax = args["quantitymax"]
+
+    # returns a list of orders to place
+    def getOrders(self, symbol: str, timestamp: float):
+        price: float = self.agent.sharePrices[symbol]
+        
+        sum = 0
+        for price in self.agent.pastPrices:
+            sum += price
+
+        avg = sum / len(self.agent.pastPrices);
+        if price == avg:
+            return []
+        else:    
+            buy = price < avg 
+        
         quantity: int = random.randint(self.quantityMin, self.quantityMax)
         order = Order(self.agent, buy, symbol, quantity, round(price, 2), timestamp)
         return [order]
