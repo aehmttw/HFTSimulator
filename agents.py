@@ -307,6 +307,7 @@ class AlgorithmMeanReversion(Algorithm):
         super().__init__(agent)
         self.quantityMin = args["quantitymin"]
         self.quantityMax = args["quantitymax"]
+        self.threshold = args["threshold"]
 
     # returns a list of orders to place
     def getOrders(self, symbol: str, timestamp: float):
@@ -317,7 +318,7 @@ class AlgorithmMeanReversion(Algorithm):
             sum += price
 
         avg = sum / len(self.agent.pastPrices);
-        if price == avg:
+        if price <= avg + avg * self.threshold and price >= avg - avg * self.threshold:
             return []
         else:    
             buy = price < avg 
