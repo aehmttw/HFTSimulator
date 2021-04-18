@@ -42,6 +42,8 @@ class Agent:
             agent = BasicMarketMakerAgent(name, simulation, balance, shares, args)
         elif type == "regulartrading":
             agent = RegularTradingAgent(name, simulation, balance, shares, args)
+        elif type == "zi":
+            agent = ZIAgent(name, simulation, balance, shares, args)
 
         algtype: str = j["algorithm"]
         algargs: dict = j["algorithmargs"]
@@ -64,6 +66,8 @@ class Agent:
             algorithm = AlgorithmSimpleMarketMaker(agent, algargs)
         elif algtype == "fixedmarketmaker":
             algorithm = AlgoritmMarketMakerFixed(agent, algargs)
+        elif type == "zi":
+            algorithm = AlgorithmZI(agent, algargs)
 
         agent.algorithm = algorithm
 
@@ -132,6 +136,24 @@ class CancelingAgent(Agent):
                 self.activeOrders.append(order)
         
         self.orderBlockTime = timestamp + self.orderCooldown
+
+class ZIAgent(Agent):
+    def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
+        super().__init__(name, simulation, balance, shares)
+        self.rate = args["reentryrate"]
+        self.simulation.pushEvent(EventScheduleAgent(-numpy.log(random.random()) / self.rate, self))
+
+    def inputData(self, trade: 'Trade', timestamp: float):
+        self.sharePrices[trade.symbol] = trade.price
+
+    def inputOrders(self, timestamp: float):
+        self.simulation.pushEvent(EventScheduleAgent(-numpy.log(random.random()) / self.rate + timestamp, self))
+        
+        for s in self.simulation.orderbooks:
+            orders = self.algorithm.getOrders(s, timestamp)
+
+            for order in orders:
+                self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[s]))
 
 class RecordingAgent(Agent):
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
@@ -205,6 +227,23 @@ class RegularTradingAgent(Agent):
             for order in orders:
                 self.attemptCreateOrder(timestamp, order, s)
 
+
+class PrivateValue:
+    def __init__(self, m: int, var: float):
+        self.maxPos = m
+        self.values = list()
+
+        for i in range(m * 2):
+            self.values.append(numpy.random.normal(0, var))
+
+        numpy.sort(self.values)
+        self.values.reverse()
+    
+    def getValue(self, pos: int, buy: bool):
+        if buy:
+            return self.values[pos + self.maxPos]
+        else:
+            return self.values[pos + self.maxPos - 1]
 
 # market maker - could schedule events at for self
 # maybe plot event queue size over time to see how long to simulate for, to see practicality
@@ -327,6 +366,36 @@ class AlgorithmMeanReversion(Algorithm):
         order = Order(self.agent, buy, symbol, quantity, round(price, 2), timestamp)
         return [order]
 
+class AlgorithmZI(Algorithm):
+    def __init__(self, agent: Agent, args: dict):
+        super().__init__(agent)
+        self.offsetMin = args["offsetmin"]
+        self.offsetMax = args["offsetmax"]
+        self.privateValue = PrivateValue(args["positionmax"], args["variation"])
+
+    def getOrders(self, symbol: str, timestamp: float):
+        price: float = self.agent.simulation.fundamental.getValue(timestamp)
+        position: int = self.agent.shares[symbol]
+
+        buy: bool = random.random() < 0.5
+
+        if position >= self.privateValue.maxPos - 1:
+            buy = False
+        elif position <= -self.privateValue.maxPos + 1:
+            buy = True
+        
+        price += self.privateValue.getValue(position, buy)
+
+        mul: int = 1
+
+        if buy:
+            mul = -1
+
+        price += mul * random.random() * (self.offsetMax - self.offsetMin) + self.offsetMin
+        order: Order = Order(self.agent, buy, symbol, 1, round(price, 2), timestamp)
+        return [order]
+
+
 # Add another market maker with predefined prices
 # Going negative issue - prevent trading what one does not have
 # data collection
@@ -422,10 +491,3 @@ class LatencyFunctionNormal(LatencyFunction):
 
     def getLatency(self) -> float:
         return max(0, numpy.random.normal(self.meanLatency, self.latencyDeviation))
-
-# todo - add multiple agent types
-
-# one agent will use a simple algorithm
-# another could be a market maker w/ historical data
-
-# maybe explore some anomalies in the future with algorithms

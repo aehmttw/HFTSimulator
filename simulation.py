@@ -1,5 +1,6 @@
 from events import *
 from agents import *
+import numpy as np
 import json
 class Simulation:
     def __init__(self, file: str = None):
@@ -26,6 +27,11 @@ class Simulation:
             j = json.loads(f.read())
         
         self.maxTime = j["runtime"]
+
+        if j["fundamental"]:
+            f = j["fundamental"]
+            self.fundamental = FundamentalValue(f["kappa"], f["mean"], f["shock"], f["prob"])
+
 
         for s in j["symbols"]:
             self.orderbooks[s] = OrderBook(self, (j["symbols"])[s], s)
@@ -102,3 +108,25 @@ class Simulation:
         #print(buysell)
         #print(self.orderbooks["A"].toString())
     
+class FundamentalValue:
+    def __init__(self, kappa: float, mean: float, shock: float, shockProb: float):
+        self.kappa = kappa
+        self.mean = mean
+        self.shock = shock
+        self.shockProb = shockProb
+
+        self.series = list()
+        self.series.append(np.random.normal(self.mean, self.shock))
+
+    def computeTo(self, num: int):
+        while len(self.series) < num:
+            last: float = self.series[len(self.series) - 1]
+
+            if random.random() < self.shockProb:
+                self.series.append(np.random.normal(self.mean * self.kappa + last * (1 - self.kappa), self.shock))
+            else:
+                self.series.append(last)
+
+    def getValue(self, time: int):
+        self.computeTo(time)
+        return self.series[int(time)]
