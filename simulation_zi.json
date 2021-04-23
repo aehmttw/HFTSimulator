@@ -20,10 +20,10 @@
             "count": 66,
             "name": "agent",
             "balance": 10000000,
-            "type": "zi",
+            "type": "poisson",
             "typeargs":
             {
-                "reentryrate": 0.0005
+                "reentryrate": 0.00005
             },
             "shares": 
             {
@@ -40,8 +40,34 @@
             "latency": "normal",
             "latencyargs":
             {
-                "mean": 10,
-                "deviation": 2
+                "mean": 100,
+                "deviation": 20
+            }
+        },
+        {
+            "name": "marketmaker",
+            "balance": 10000000,
+            "type": "poisson",
+            "typeargs":
+            {
+                "reentryrate": 0.0005
+            },
+            "shares": 
+            {
+                "A": 0
+            },
+            "algorithm": "fundamentalmarketmaker",
+            "algorithmargs": 
+            {
+                "tickcount": 100,
+                "tickspread": 0.1,
+                "spread": 0.2
+            },
+            "latency": "normal",
+            "latencyargs":
+            {
+                "mean": 100,
+                "deviation": 20
             }
         }
     ]

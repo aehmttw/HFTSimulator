@@ -43,8 +43,8 @@ class Agent:
             agent = BasicMarketMakerAgent(name, simulation, balance, shares, args)
         elif type == "regulartrading":
             agent = RegularTradingAgent(name, simulation, balance, shares, args)
-        elif type == "zi":
-            agent = ZIAgent(name, simulation, balance, shares, args)
+        elif type == "poisson":
+            agent = PoissonAgent(name, simulation, balance, shares, args)
 
         algtype: str = j["algorithm"]
         algargs: dict = j["algorithmargs"]
@@ -67,7 +67,9 @@ class Agent:
             algorithm = AlgorithmSimpleMarketMaker(agent, algargs)
         elif algtype == "fixedmarketmaker":
             algorithm = AlgoritmMarketMakerFixed(agent, algargs)
-        elif type == "zi":
+        elif algtype == "fundamentalmarketmaker":
+            algorithm = AlgorithmFundamentalMM(agent, algargs)
+        elif algtype == "zi":
             algorithm = AlgorithmZI(agent, algargs)
 
         agent.algorithm = algorithm
@@ -138,7 +140,7 @@ class CancelingAgent(Agent):
         
         self.orderBlockTime = timestamp + self.orderCooldown
 
-class ZIAgent(Agent):
+class PoissonAgent(Agent):
     def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
         super().__init__(name, simulation, balance, shares)
         self.rate = args["reentryrate"]
@@ -413,7 +415,7 @@ class AlgorithmFundamentalMM(Algorithm):
     def getOrders(self, symbol: str, timestamp: float):
         price: float = self.agent.simulation.fundamental.getValue(timestamp)
         #for now, assumes 0 latency
-        book: OrderBook = self.agent.simulation.orderbook[symbol]
+        book: OrderBook = self.agent.simulation.orderbooks[symbol]
 
         hasBuy = False
         hasSell = False
@@ -437,10 +439,10 @@ class AlgorithmFundamentalMM(Algorithm):
             p: double = price + self.tickSpread * i + self.spread
             p2: double = price - self.tickSpread - i + self.spread
 
-            if not hasBuy or p < bestbuy:
+            if not hasBuy or p < bestbuy[2].price:
                 self.orders.append(Order(self.agent, True, symbol, 1, round(p, 2), timestamp))
 
-            if not hasSell or p2 > bestsell:
+            if not hasSell or p2 > bestsell[2].price:
                 self.orders.append(Order(self.agent, False, symbol, 1, round(p2, 2), timestamp))
 
         return self.orders + cancelOrders
