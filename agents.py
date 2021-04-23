@@ -1,3 +1,4 @@
+from numpy import double
 from orderbook import *
 from order import *
 from events import *
@@ -22,14 +23,14 @@ class Agent:
         self.algorithm = None
         self.latencyFunction = None
 
-    def fromJson(j, simulation: 'Simulation') -> 'Agent':
-        name: str = j["name"]
+    def fromJson(j, simulation: 'Simulation', count) -> 'Agent':
+        name: str = j["name"] + count
         balance: float = j["balance"]
         
         type: str = j["type"]
         args: dict = j["typeargs"]
 
-        shares: dict = j["shares"]
+        shares: dict = j["shares"].copy()
 
         agent: Agent = None
         if type == "basic":
@@ -241,9 +242,9 @@ class PrivateValue:
     
     def getValue(self, pos: int, buy: bool):
         if buy:
-            return self.values[pos + self.maxPos]
+            return self.values[max(pos + self.maxPos, 0)]
         else:
-            return self.values[pos + self.maxPos - 1]
+            return self.values[min(pos + self.maxPos - 1, len(self.values) - 1)]
 
 # market maker - could schedule events at for self
 # maybe plot event queue size over time to see how long to simulate for, to see practicality
@@ -372,6 +373,7 @@ class AlgorithmZI(Algorithm):
         self.offsetMin = args["offsetmin"]
         self.offsetMax = args["offsetmax"]
         self.privateValue = PrivateValue(args["positionmax"], args["variation"])
+        self.orders = list()
 
     def getOrders(self, symbol: str, timestamp: float):
         price: float = self.agent.simulation.fundamental.getValue(timestamp)
@@ -391,10 +393,57 @@ class AlgorithmZI(Algorithm):
         if buy:
             mul = -1
 
+        cancelOrders = list()
+        for order in self.orders:
+            cancelOrders.append(self.agent.simulation.makeCancelOrder(self.agent, order.orderID, timestamp))
+
         price += mul * random.random() * (self.offsetMax - self.offsetMin) + self.offsetMin
         order: Order = Order(self.agent, buy, symbol, 1, round(price, 2), timestamp)
-        return [order]
+        self.orders = [order]
+        return self.orders + cancelOrders
 
+class AlgorithmFundamentalMM(Algorithm):
+    def __init__(self, agent: Agent, args: dict):
+        super().__init__(agent)
+        self.orders = list()
+        self.spread = args["spread"]
+        self.tickSpread = args["tickspread"]
+        self.tickCount = args["tickcount"]
+
+    def getOrders(self, symbol: str, timestamp: float):
+        price: float = self.agent.simulation.fundamental.getValue(timestamp)
+        #for now, assumes 0 latency
+        book: OrderBook = self.agent.simulation.orderbook[symbol]
+
+        hasBuy = False
+        hasSell = False
+
+        if len(book.buybook) > 0:
+            hasBuy = True
+            bestbuy = heapq.heappop(book.buybook)
+            heapq.heappush(book.buybook, bestbuy)
+
+        if len(book.sellbook) > 0:
+            hasSell = True
+            bestsell = heapq.heappop(book.sellbook)
+            heapq.heappush(book.sellbook, bestsell)
+
+        cancelOrders = list()
+        for order in self.orders:
+            cancelOrders.append(self.agent.simulation.makeCancelOrder(self.agent, order.orderID, timestamp))
+
+        self.orders = list()
+        for i in range(self.tickCount):
+            p: double = price + self.tickSpread * i + self.spread
+            p2: double = price - self.tickSpread - i + self.spread
+
+            if not hasBuy or p < bestbuy:
+                self.orders.append(Order(self.agent, True, symbol, 1, round(p, 2), timestamp))
+
+            if not hasSell or p2 > bestsell:
+                self.orders.append(Order(self.agent, False, symbol, 1, round(p2, 2), timestamp))
+
+        return self.orders + cancelOrders
 
 # Add another market maker with predefined prices
 # Going negative issue - prevent trading what one does not have

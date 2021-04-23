@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plotter
 import numpy as np
+import multiprocessing
 
 class Grapher:
     def __init__(self, dir: str, amount: int):
@@ -92,28 +93,35 @@ class Grapher:
                     
                     groups[first].append(key)
                 else:
-                    self.graphAvg(key, interval)
-                    plotter.savefig(self.dir + "-" + key + ".png")
+                    p = multiprocessing.Process(target=self.graphAndSaveOne, args=(key, interval,))
+                    p.start()
+
+        for key in groups:
+            p = multiprocessing.Process(target=self.graphAndSaveGroup, args=(key, interval, groups[key]))
+            p.start()
+
+    def graphAndSaveOne(self, key, interval):
+        self.graphAvg(key, interval)
+        plotter.savefig(self.dir + "-" + key + ".png")
+
+    def graphAndSaveGroup(self, key, interval, group):
+        plotter.figure()
+        plotter.xlabel("Time")
+        plotter.ylabel(key)
+
+        l: list = list()
 
         colors = ["#0000ff", "#00ff00", "#ff0000", "#ff00ff", "#00ffff", "#ffff00", "#000000"]
         colors2 = ["#7f7fff", "#7fff7f", "#ff7f7f", "#ff7fff", "#7fffff", "#ffff7f", "#7f7f7f"]
 
-        for key in groups:
-            plotter.figure()
-            plotter.xlabel("Time")
-            plotter.ylabel(key)
+        index: int = 0
+        for s in group:
+            self.graphAvg(s, interval, True, colors[index % len(colors)], colors2[index % len(colors2)])
+            index += 1
+            s: str = s.split("/")[1]
+            l.append(s)
+            l.append("_" + s + " 5%")
+            l.append("_" + s + " 95%")
 
-            l: list = list()
-
-            index: int = 0
-            for s in groups[key]:
-                self.graphAvg(s, interval, True, colors[index], colors2[index])
-                index += 1
-                s: str = s.split("/")[1]
-                l.append(s)
-                l.append("_" + s + " 5%")
-                l.append("_" + s + " 95%")
-
-            plotter.legend(l)
-            plotter.savefig(self.dir + "-" + key + ".png")
-
+        plotter.legend(l)
+        plotter.savefig(self.dir + "-" + key + ".png")

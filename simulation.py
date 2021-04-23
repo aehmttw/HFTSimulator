@@ -1,3 +1,4 @@
+from os import system
 from events import *
 from agents import *
 import numpy as np
@@ -38,7 +39,18 @@ class Simulation:
             self.startingPrices[s] = (j["symbols"])[s]
 
         for s in j["agents"]:
-            self.agents.append(Agent.fromJson(s, self))
+            count = 1
+
+            if "count" in s:
+                count = s["count"]
+            
+            for i in range(count):
+                p: str = ""
+
+                if count > 1:
+                    p = str(i)
+
+                self.agents.append(Agent.fromJson(s, self, p))
 
         for a in self.agents:
             for s in self.startingPrices:
@@ -91,6 +103,7 @@ class Simulation:
 
             if time != oldTime and self.debugPrint:
                 print(time)
+
                 #print(self.orderbooks["A"].toStringShort())
 
             if event.time > self.maxTime:

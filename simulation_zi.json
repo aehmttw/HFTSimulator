@@ -9,7 +9,7 @@
         "mean": 100,
         "shock": 10,
         "kappa": 0.05,
-        "prob": 0.05
+        "prob": 1
     },
 
     "runtime": 1000000,
@@ -17,12 +17,13 @@
     "agents":
     [ 
         {
-            "name": "agent1",
+            "count": 66,
+            "name": "agent",
             "balance": 10000000,
             "type": "zi",
             "typeargs":
             {
-                "reentryrate": 0.01
+                "reentryrate": 0.0005
             },
             "shares": 
             {
@@ -31,205 +32,16 @@
             "algorithm": "zi",
             "algorithmargs": 
             {
-                "offsetmin": 0.02,
+                "offsetmin": 0.00,
                 "offsetmax": 0.05,
-                "positionmax": 1000,
-                "variation": 10
+                "positionmax": 100,
+                "variation": 50
             },
             "latency": "normal",
             "latencyargs":
             {
-                "mean": 100,
-                "deviation": 20
-            }
-        },
-        {
-            "name": "agent1",
-            "balance": 10000000,
-            "type": "zi",
-            "typeargs":
-            {
-                "reentryrate": 0.01
-            },
-            "shares": 
-            {
-                "A": 0
-            },
-            "algorithm": "zi",
-            "algorithmargs": 
-            {
-                "offsetmin": 0.02,
-                "offsetmax": 0.05,
-                "positionmax": 1000,
-                "variation": 10
-            },
-            "latency": "normal",
-            "latencyargs":
-            {
-                "mean": 100,
-                "deviation": 20
-            }
-        },
-        {
-            "name": "agent1",
-            "balance": 10000000,
-            "type": "zi",
-            "typeargs":
-            {
-                "reentryrate": 0.01
-            },
-            "shares": 
-            {
-                "A": 0
-            },
-            "algorithm": "zi",
-            "algorithmargs": 
-            {
-                "offsetmin": 0.02,
-                "offsetmax": 0.05,
-                "positionmax": 1000,
-                "variation": 10
-            },
-            "latency": "normal",
-            "latencyargs":
-            {
-                "mean": 100,
-                "deviation": 20
-            }
-        },
-        {
-            "name": "agent1",
-            "balance": 10000000,
-            "type": "zi",
-            "typeargs":
-            {
-                "reentryrate": 0.01
-            },
-            "shares": 
-            {
-                "A": 0
-            },
-            "algorithm": "zi",
-            "algorithmargs": 
-            {
-                "offsetmin": 0.02,
-                "offsetmax": 0.05,
-                "positionmax": 1000,
-                "variation": 10
-            },
-            "latency": "normal",
-            "latencyargs":
-            {
-                "mean": 100,
-                "deviation": 20
-            }
-        },
-        {
-            "name": "agent1",
-            "balance": 10000000,
-            "type": "zi",
-            "typeargs":
-            {
-                "reentryrate": 0.01
-            },
-            "shares": 
-            {
-                "A": 0
-            },
-            "algorithm": "zi",
-            "algorithmargs": 
-            {
-                "offsetmin": 0.02,
-                "offsetmax": 0.05,
-                "positionmax": 1000,
-                "variation": 10
-            },
-            "latency": "normal",
-            "latencyargs":
-            {
-                "mean": 100,
-                "deviation": 20
-            }
-        },
-        {
-            "name": "agent1",
-            "balance": 10000000,
-            "type": "zi",
-            "typeargs":
-            {
-                "reentryrate": 0.01
-            },
-            "shares": 
-            {
-                "A": 0
-            },
-            "algorithm": "zi",
-            "algorithmargs": 
-            {
-                "offsetmin": 0.02,
-                "offsetmax": 0.05,
-                "positionmax": 1000,
-                "variation": 10
-            },
-            "latency": "normal",
-            "latencyargs":
-            {
-                "mean": 100,
-                "deviation": 20
-            }
-        },
-        {
-            "name": "agent1",
-            "balance": 10000000,
-            "type": "zi",
-            "typeargs":
-            {
-                "reentryrate": 0.01
-            },
-            "shares": 
-            {
-                "A": 0
-            },
-            "algorithm": "zi",
-            "algorithmargs": 
-            {
-                "offsetmin": 0.02,
-                "offsetmax": 0.05,
-                "positionmax": 1000,
-                "variation": 10
-            },
-            "latency": "normal",
-            "latencyargs":
-            {
-                "mean": 100,
-                "deviation": 20
-            }
-        },
-        {
-            "name": "agent1",
-            "balance": 10000000,
-            "type": "zi",
-            "typeargs":
-            {
-                "reentryrate": 0.01
-            },
-            "shares": 
-            {
-                "A": 0
-            },
-            "algorithm": "zi",
-            "algorithmargs": 
-            {
-                "offsetmin": 0.02,
-                "offsetmax": 0.05,
-                "positionmax": 1000,
-                "variation": 10
-            },
-            "latency": "normal",
-            "latencyargs":
-            {
-                "mean": 100,
-                "deviation": 20
+                "mean": 10,
+                "deviation": 2
             }
         }
     ]
