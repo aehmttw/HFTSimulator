@@ -20,7 +20,7 @@
             "count": 66,
             "name": "agent",
             "balance": 10000000,
-            "type": "zi",
+            "type": "poisson",
             "typeargs":
             {
                 "reentryrate": 0.00005

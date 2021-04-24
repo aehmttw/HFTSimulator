@@ -434,17 +434,23 @@ class AlgorithmFundamentalMM(Algorithm):
         for order in self.orders:
             cancelOrders.append(self.agent.simulation.makeCancelOrder(self.agent, order.orderID, timestamp))
 
+        #bprices = list()
+        #sprices = list()
         self.orders = list()
         for i in range(self.tickCount):
             p: double = price + self.tickSpread * i + self.spread
-            p2: double = price - self.tickSpread - i + self.spread
+            p2: double = price - self.tickSpread * i - self.spread
+            #print(str(p) + " " + str(p2))
 
             if not hasBuy or p < bestbuy[2].price:
+                #bprices.append(round(p, 2))
                 self.orders.append(Order(self.agent, True, symbol, 1, round(p, 2), timestamp))
 
             if not hasSell or p2 > bestsell[2].price:
+                #sprices.append(round(p2, 2))
                 self.orders.append(Order(self.agent, False, symbol, 1, round(p2, 2), timestamp))
 
+        #print(str(bprices) + " " + str(sprices))
         return self.orders + cancelOrders
 
 # Add another market maker with predefined prices
