@@ -45,6 +45,8 @@ class Agent:
             agent = RegularTradingAgent(name, simulation, balance, shares, args)
         elif type == "poisson":
             agent = PoissonAgent(name, simulation, balance, shares, args)
+        elif type == "stalequotearbitrage":
+            agent = StaleQuoteArbitrageAgent(name, simulation, balance, shares, args)
 
         algtype: str = j["algorithm"]
         algargs: dict = j["algorithmargs"]
@@ -71,7 +73,8 @@ class Agent:
             algorithm = AlgorithmFundamentalMM(agent, algargs)
         elif algtype == "zi":
             algorithm = AlgorithmZI(agent, algargs)
-
+        elif algtype == "stalequotearbitrage":
+            algorithm = AlgorithmStaleQuoteArbitrage(agent, algargs)
         agent.algorithm = algorithm
 
         latency: LatencyFunction = None
@@ -230,6 +233,38 @@ class RegularTradingAgent(Agent):
             for order in orders:
                 self.attemptCreateOrder(timestamp, order, s)
 
+class StaleQuoteArbitrageAgent(Agent):
+    def __init__(self, name: str, simulation: 'Simulation', balance: float, shares: dict, args: dict):
+        super().__init__(name, simulation, balance, shares)
+        self.activeOrders = list()
+        self.interval = args["interval"]
+        self.symbol = args["symbol"]
+        self.simulation.pushEvent(EventScheduleAgent(self.interval, self))
+
+    def inputData(self, trade: 'Trade', timestamp: float):
+        pass
+
+    def inputOrders(self, timestamp: float):
+        self.simulation.pushEvent(EventScheduleAgent(self.interval + timestamp, self))
+        self.simulation.pushEvent(EventRequestOrderbook(self.latencyFunction.getLatency() + timestamp, self, self.symbol, 10))
+
+    def inputOrderBooks(self, timestamp: float, buybook: list, sellbook: list):
+        self.lastBuyBook = buybook
+        self.lastSellBook = sellbook
+
+        for o in self.activeOrders:
+            self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), self.simulation.makeCancelOrder(self, o.orderID, timestamp), self.simulation.orderbooks[o.symbol]))
+
+        self.activeOrders.clear()
+
+        for s in self.simulation.orderbooks:
+            orders = self.algorithm.getOrders(s, timestamp)
+
+            for o in orders:
+                self.activeOrders.append(o)
+
+            for order in orders:
+                self.simulation.pushEvent(EventOrder(timestamp + self.latencyFunction.getLatency(), order, self.simulation.orderbooks[s]))
 
 class PrivateValue:
     def __init__(self, m: int, var: float):
@@ -452,6 +487,34 @@ class AlgorithmFundamentalMM(Algorithm):
 
         #print(str(bprices) + " " + str(sprices))
         return self.orders + cancelOrders
+
+class AlgorithmStaleQuoteArbitrage(Algorithm):
+    def __init__(self, agent: Agent, args: dict):
+        super().__init__(agent)
+        self.threshold = args["threshold"]
+        
+    def getOrders(self, symbol: str, timestamp: float):
+        orders = list()
+
+        price = self.agent.simulation.fundamental.getValue(timestamp)
+        
+        for order in self.agent.lastBuyBook:
+            if price - order[2].price < self.threshold:
+                orders.append(order[2])
+
+        for order in self.agent.lastSellBook:
+            if order[2].price - price < self.threshold:
+                orders.append(order[2])
+        
+        #print(str(len(self.agent.lastBuyBook) + len(self.agent.lastSellBook)) + " " + str(len(orders)))
+
+        submitOrders = list()
+        for order in orders:
+            submitOrders.append(Order(self.agent, not order.buy, order.symbol, order.amount, order.price, timestamp))
+
+        return submitOrders
+    
+
 
 # Add another market maker with predefined prices
 # Going negative issue - prevent trading what one does not have

@@ -430,14 +430,14 @@ class OrderBook:
         for agent in self.simulation.agents:
             bar += ",Net Worth/" + agent.name
 
-        for agent in self.simulation.agents:
-            bar += "," + agent.name + " Orders/Sent"
+        #for agent in self.simulation.agents:
+        #    bar += "," + agent.name + " Orders/Sent"
         
-        for agent in self.simulation.agents:
-            bar += "," + agent.name + " Orders/Matched"
+        #for agent in self.simulation.agents:
+        #    bar += "," + agent.name + " Orders/Matched"
 
-        for agent in self.simulation.agents:
-            bar += "," + agent.name + " Orders/Canceled"
+        #for agent in self.simulation.agents:
+        #    bar += "," + agent.name + " Orders/Canceled"
 
         f.write(bar + "\n")
 
@@ -508,14 +508,14 @@ class DataPoint:
         for a in self.agentShares:
             s += "," + str(self.agentShares[a] * self.price + self.agentBalances[a])
 
-        for a in self.agentOrdersSent:
-            s += "," + str(self.agentOrdersSent[a])
+        #for a in self.agentOrdersSent:
+        #    s += "," + str(self.agentOrdersSent[a])
 
-        for a in self.agentOrdersMatched:
-            s += "," + str(self.agentOrdersMatched[a])
+        #for a in self.agentOrdersMatched:
+        #    s += "," + str(self.agentOrdersMatched[a])
 
-        for a in self.agentOrdersSent:
-            s += "," + str(self.agentOrdersCanceled[a])
+        #for a in self.agentOrdersSent:
+        #    s += "," + str(self.agentOrdersCanceled[a])
 
         return s
 

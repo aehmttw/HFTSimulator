@@ -4,15 +4,38 @@ import numpy as np
 import multiprocessing
 import sys
 
-class Grapher:
-    def __init__(self, dir: str, amount: int):
+class FastGrapher:
+    def __init__(self, dir: str, amount: int, interval: float):
         self.dir: str = dir
         self.amount: int = amount
         self.data = list()
+        self.rows = 0
+        self.interval = interval
 
         for i in range(amount):
         #    print("Reading " + str(i))
-            self.data.append(pd.read_csv(dir + str(i) + ".csv"))
+            df = pd.read_csv(dir + str(i) + ".csv")
+
+            indexes = list()
+            i = 0
+            last = 0
+
+            for col in df["Timestamp"]:
+                if i > 0:
+                    dif = int(col / interval) - int(last / interval)
+                    for j in range(dif):
+                        indexes.append(i - 1)
+                
+                last = col
+
+                i += 1
+
+            self.rows = max(self.rows, len(indexes))
+
+            df2 = df.iloc[indexes]
+            df2.reset_index()
+            self.data.append(df2)
+            del df
 
     def graphAll(self, property: str):
         plotter.figure()
@@ -45,44 +68,31 @@ class Grapher:
         p5 = list()
         p95 = list() 
 
-        while True: # might be worth optimizing, leave comments to explain how this works/what it does
-            time += interval
+        #print(self.rows)
+        for j in range(self.rows):
+            time = j * interval
 
-            stop: bool = True
             i: int = 0
 
-            value: float = 0
             currentVals = np.zeros(100)
 
             for dataFrame in self.data:
-                while len(dataFrame) - 1 > current[i] and dataFrame.loc[current[i] + 1, "Timestamp"] < time: 
-                    current[i] += 1
-
-                if len(dataFrame) - 1 > current[i]:
-                    stop = False
-                
-                value += dataFrame.loc[current[i], property]
-                currentVals[i] = dataFrame.loc[current[i], property]
+                #print(j)
+                r = dataFrame.iloc[j, :]
+                currentVals[i] = r.loc[property]
                 i += 1
-            
-            #averages.append(value / i)
-            #deviations.append(np.std(currentVals))
             
             sorted = np.sort(currentVals)
             medians.append((sorted[49] + sorted[50]) / 2)
             p5.append(sorted[4])
             p95.append(sorted[94])
-
             timestamps.append(time)
-
-            if stop:
-                break
         
         plotter.plot(timestamps, medians, color1)
         plotter.plot(timestamps, p5, color2)
         plotter.plot(timestamps, p95, color2)
 
-    def saveAllAvg(self, interval):
+    def saveAllAvg(self):
         groups = dict()
         for key in self.data[0].keys():
             if key != "Timestamp":
@@ -94,11 +104,11 @@ class Grapher:
                     
                     groups[first].append(key)
                 else:
-                    p = multiprocessing.Process(target=self.graphAndSaveOne, args=(key, interval,))
+                    p = multiprocessing.Process(target=self.graphAndSaveOne, args=(key, self.interval,))
                     p.start()
 
         for key in groups:
-            p = multiprocessing.Process(target=self.graphAndSaveGroup, args=(key, interval, groups[key]))
+            p = multiprocessing.Process(target=self.graphAndSaveGroup, args=(key, self.interval, groups[key]))
             p.start()
 
     def graphAndSaveOne(self, key, interval):
@@ -128,9 +138,8 @@ class Grapher:
         plotter.savefig(self.dir + "-" + key + ".png")
 
 def main():
-    path = sys.argv[1]
-    g = Grapher(path, 10)
-    g.saveAllAvg(5000)
+    g = FastGrapher("runs/multispeedsqa/output", 100, 5000)
+    g.saveAllAvg()
 
 if __name__ == "__main__":
     main()

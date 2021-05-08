@@ -77,6 +77,48 @@ class EventMarketData(Event):
         else:
             return "Market data event: time = " + str(self.time) + " for " + self.target.name
 
+class EventRequestOrderbook(Event):
+    def __init__(self, time: float, agent: 'Agent', symbol: str, amount: int):
+        self.agent = agent
+        self.time = time
+        self.symbol = symbol
+        self.amount = amount
+
+    def run(self):
+        self.agent.simulation.pushEvent(EventSendOrderbook(self.time + self.agent.latencyFunction.getLatency(), self.agent, self.symbol, self.amount))
+
+class EventSendOrderbook(Event):
+    def __init__(self, time: float, agent: 'Agent', symbol: str, amount: int):
+        self.agent = agent
+        self.time = time
+        self.symbol = symbol
+        self.amount = amount
+        self.lastBuyBook = list()
+        self.lastSellBook = list()
+
+        book = self.agent.simulation.orderbooks[self.symbol] 
+        bb = list()
+        sb = list()
+
+        for i in range(amount):
+            if len(book.buybook) > 0:
+                bb.append(heapq.heappop(book.buybook))
+            
+            if len(book.sellbook) > 0:
+                sb.append(heapq.heappop(book.sellbook))
+
+        for o in bb:
+            heapq.heappush(book.buybook, o)
+            
+        for o in sb:
+            heapq.heappush(book.sellbook, o)
+
+        self.lastBuyBook = bb
+        self.lastSellBook = sb
+
+    def run(self):
+        self.agent.inputOrderBooks(self.time, self.lastBuyBook, self.lastSellBook)
+
 class EventScheduleAgent(Event):
     def __init__(self, time: float, agent: 'RegularTradingAgent'):
         super().__init__(time)
