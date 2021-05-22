@@ -7,6 +7,7 @@ class Simulation:
     def __init__(self, file: str = None):
         self.eventQueue = EventQueue(self)
         self.agents = list()
+        self.agentGroups = list()
         self.orderbooks = dict()
         self.startingPrices = dict()
         self.maxTime = 0
@@ -43,6 +44,8 @@ class Simulation:
 
             if "count" in s:
                 count = s["count"]
+
+            self.agentGroups.append(s["name"])
             
             for i in range(count):
                 p: str = ""

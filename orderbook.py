@@ -430,14 +430,17 @@ class OrderBook:
         for agent in self.simulation.agents:
             bar += ",Net Worth/" + agent.name
 
-        #for agent in self.simulation.agents:
-        #    bar += "," + agent.name + " Orders/Sent"
+        for agent in self.simulation.agents:
+            if not (agent.name.startswith("_")):
+                bar += "," + agent.name + " Orders/Sent"
         
-        #for agent in self.simulation.agents:
-        #    bar += "," + agent.name + " Orders/Matched"
+        for agent in self.simulation.agents:
+            if not (agent.name.startswith("_")):
+                bar += "," + agent.name + " Orders/Matched"
 
-        #for agent in self.simulation.agents:
-        #    bar += "," + agent.name + " Orders/Canceled"
+        for agent in self.simulation.agents:
+            if not (agent.name.startswith("_")):
+                bar += "," + agent.name + " Orders/Canceled"
 
         f.write(bar + "\n")
 
@@ -445,6 +448,50 @@ class OrderBook:
             f.write(datapoint.toCsvLine() + "\n")
 
         f.close()
+    
+    def writeStats(self, file: str):
+        f = open(file, "w")
+        bar: str = "Agent,AveragePriceTraded,AveragePriceBuy,AveragePriceSell,OrdersSent,OrdersMatched,OrdersCanceled,OrdersStanding"
+
+        #TODO fill in header 
+        for agent in self.simulation.agentGroups:
+            bar += "," + agent + "," + agent + "BuyCount," + agent + "BuyPrice," + agent + "SellCount," + agent + "SellPrice"; 
+
+        f.write(bar + "\n")
+        for agent in self.simulation.agents:
+            f.write(agent.name + "," + str(numpy.average(agent.pricesMatched)) + "," + str(numpy.average(agent.pricesMatchedBuy)) + "," + str(numpy.average(agent.pricesMatchedSell)))
+            f.write("," + str(numpy.average(agent.sentOrders)) + "," + str(numpy.average(agent.matchedOrders)) + "," + str(numpy.average(agent.canceledOrders)))
+
+            standingOrders: int = 0
+
+            for o in self.buybook:
+                if o[2].agent == agent:
+                    standingOrders += 1
+
+            for o in self.sellbook:
+                if o[2].agent == agent:
+                    standingOrders += 1
+
+            f.write("," + str(standingOrders))
+
+            for agent2 in self.simulation.agentGroups:
+                if agent2 in agent.agentsMatched:
+                    f.write("," + str(agent.agentsMatched[agent2]))
+                else:
+                    f.write(",0")
+
+                if agent2 in agent.agentsMatchedBuy:
+                    f.write("," + str(agent.agentsMatchedBuy[agent2]) + "," + str(numpy.average(agent.agentPricesMatchedBuy[agent2])))
+                else:
+                    f.write(",0,0")
+
+                if agent2 in agent.agentsMatchedSell:
+                    f.write("," + str(agent.agentsMatchedSell[agent2]) + "," + str(numpy.average(agent.agentPricesMatchedSell[agent2])))
+                else:
+                    f.write(",0,0")
+
+
+            f.write("\n")
 
 class DataPoint:
     def __init__(self, orderBook: OrderBook, timestamp: float):
@@ -508,14 +555,17 @@ class DataPoint:
         for a in self.agentShares:
             s += "," + str(self.agentShares[a] * self.price + self.agentBalances[a])
 
-        #for a in self.agentOrdersSent:
-        #    s += "," + str(self.agentOrdersSent[a])
+        for a in self.agentOrdersSent:
+            if not (a.startswith("_")):
+                s += "," + str(self.agentOrdersSent[a])
 
-        #for a in self.agentOrdersMatched:
-        #    s += "," + str(self.agentOrdersMatched[a])
+        for a in self.agentOrdersMatched:
+            if not (a.startswith("_")):
+                s += "," + str(self.agentOrdersMatched[a])
 
-        #for a in self.agentOrdersSent:
-        #    s += "," + str(self.agentOrdersCanceled[a])
+        for a in self.agentOrdersSent:
+            if not (a.startswith("_")):
+                s += "," + str(self.agentOrdersCanceled[a])
 
         return s
 

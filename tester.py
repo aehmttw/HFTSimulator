@@ -13,10 +13,12 @@ def runSimulation(name: str, num: int):
     simulation.run()
     simulation.orderbooks["A"].calculateVolatility(20000)
     simulation.orderbooks["A"].write("runs/" + name + "/output" + str(num) + ".csv")
+    simulation.orderbooks["A"].writeStats("runs/" + name + "/stats" + str(num) + ".csv")
+
     print("Finished simulation " + str(num))
 
 def main():
-    name: str = "multispeedsqa"
+    name: str = "zi"
     for i in range(100):
         p = multiprocessing.Process(target=runSimulation, args=(name, i,))
         p.start()

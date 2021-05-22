@@ -14,6 +14,16 @@ class Agent:
         self.canceledOrders = 0
         self.matchedOrders = 0
 
+        self.agentsMatched = dict()
+        self.pricesMatched = list()
+        self.pricesMatchedBuy = list()
+        self.pricesMatchedSell = list()
+
+        self.agentsMatchedBuy = dict()
+        self.agentsMatchedSell = dict()
+        self.agentPricesMatchedBuy = dict()
+        self.agentPricesMatchedSell = dict()
+
         # Symbol -> amount
         self.shares = shares
 
@@ -47,6 +57,8 @@ class Agent:
             agent = PoissonAgent(name, simulation, balance, shares, args)
         elif type == "stalequotearbitrage":
             agent = StaleQuoteArbitrageAgent(name, simulation, balance, shares, args)
+
+        agent.groupName = j["name"]
 
         algtype: str = j["algorithm"]
         algargs: dict = j["algorithmargs"]

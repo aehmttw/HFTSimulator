@@ -22,3 +22,31 @@ class Trade:
         self.seller.matchedOrders += self.amount
         self.completed = True
 
+        self.buyer.pricesMatched.append(self.price)
+        self.seller.pricesMatched.append(self.price)
+        
+        self.buyer.pricesMatchedBuy.append(self.price)
+        self.seller.pricesMatchedSell.append(self.price)
+
+        if not(self.seller.groupName in self.buyer.agentsMatched):
+            self.buyer.agentsMatched[self.seller.groupName] = 0
+
+        if not(self.seller.groupName in self.buyer.agentsMatchedBuy):
+            self.buyer.agentsMatchedBuy[self.seller.groupName] = 0
+            self.buyer.agentPricesMatchedBuy[self.seller.groupName] = list()
+
+        if not(self.buyer.groupName in self.seller.agentsMatched):
+            self.seller.agentsMatched[self.buyer.groupName] = 0
+
+        if not(self.buyer.groupName in self.seller.agentsMatchedSell):
+            self.seller.agentsMatchedSell[self.buyer.groupName] = 0
+            self.seller.agentPricesMatchedSell[self.buyer.groupName] = list()
+
+        self.buyer.agentsMatched[self.seller.groupName] += self.amount
+        self.seller.agentsMatched[self.buyer.groupName] += self.amount
+
+        self.buyer.agentsMatchedBuy[self.seller.groupName] += self.amount
+        self.seller.agentsMatchedSell[self.buyer.groupName] += self.amount
+        
+        self.buyer.agentPricesMatchedBuy[self.seller.groupName].append(self.price)
+        self.seller.agentPricesMatchedSell[self.buyer.groupName].append(self.price)
