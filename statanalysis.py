@@ -112,7 +112,7 @@ class AgentStats:
 
 
 def main():
-    g = StatsAnalyzer("runs/slowsqa/stats", 100)
+    g = StatsAnalyzer("runs/3speedsqa/stats", 100)
     g.print()
 
 if __name__ == "__main__":

@@ -163,7 +163,7 @@ def main():
     #self.addLimits("sqa-agent2 Orders", 0, 5000)
     #self.addLimits("sqa-agent-slow Orders", 0, 5000)
 
-    g = Grapher("runs/zi/output", 100, 5000, limits)
+    g = Grapher("runs/3speedsqa/output", 100, 5000, limits)
     g.saveAllAvg()
 
 if __name__ == "__main__":
