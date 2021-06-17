@@ -1,6 +1,7 @@
 from agents import *
 from order import *
 
+# This class is instantiated whenever two orders match, and represents the trade between those two orders
 class Trade:
     def __init__(self, buyer: 'Agent', seller: 'Agent', buyOrder: 'Order', sellOrder: 'Order', price: float, symbol: str, amount: int, timestamp: float):         
         self.buyer = buyer
@@ -13,6 +14,7 @@ class Trade:
         self.buyOrder = buyOrder
         self.sellOrder = sellOrder
 
+    # Log for both agents changed statistics as a result of this trade
     def process(self):
         self.buyer.shares[self.symbol] += self.amount
         self.seller.shares[self.symbol] -= self.amount

@@ -1,9 +1,8 @@
 import uuid
-class Order:
-    # only include agent in order initially
-    # submit buy or sell functions which set timestamp
 
-    #todo - add limit support
+# This represents an order an agent sends to buy or cell a certain number of shares at a certain limit price
+# Market orders are not supported, all orders are limit orders
+class Order:
     def __init__(self, agent: 'Agent', buy: bool, symbol: str, amount: int, price: float, timestamp: float):
         self.cancel = False
         self.orderID = uuid.uuid4()

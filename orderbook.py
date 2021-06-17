@@ -4,148 +4,160 @@ import mpl_finance as plotf
 from order import Order
 from trade import Trade
 import numpy
+
+# An OrderBook represents a stock exchange's centralized order book for a share, where all orders involving this share wait until matches can be found.
 class OrderBook:
-
-    # Every agent will have their own order books, representing only the data they have received
-    # These separate order books, unlike the main ones, have simulation set to None
     def __init__(self, simulation: 'Simulation', price: float, symbol: str):
-        # Stores sell side of order book as tuples with price, timestamp, and Order.
+        # Stores sell side of order book as tuples with price (float), timestamp (float), and Order.
         # The lowest sell order is popped first. In the event of a tie, the oldest one should pop first.
-        self.sellbook = []
+        self.sellbook: list = []
 
-        # Stores buy side of order book as tuples with negative price, timestamp, and Order.
+        # Stores buy side of order book as tuples with negative price (float), timestamp (float), and Order.
         # The highest buy order is popped first. In the event of a tie, the oldest one should pop first.
-        self.buybook = []
+        self.buybook: list = []
 
-        self.trades = []
-        self.datapoints = []
-        self.price = price
-        self.symbol = symbol
-        self.lastOrderTime = 0
-        self.lastUnqueueTime = 0
+        # List of all trades transacted, stored as Trade objects
+        self.trades: list = []
 
-        self.simulation = simulation
+        # List of simulation data points, generated whenever an order is processed, stored as DataPoint objects
+        self.datapoints: list = []
+        self.price: float = price
+        self.symbol: str = symbol
 
-    # Adds an order to the order book. Used internally.
+        # Time at which the newest order in the order book queue is to be processed (matched or added to the queue)
+        self.lastOrderTime: float = 0
+
+        # Time at which the last order was received and queued
+        self.lastUnqueueTime: float = 0
+
+        self.simulation: 'Simulation' = simulation
+
+    # Adds an order to the order book. Used internally, does not try to match orders.
     def _addOrder(self, order: Order):      
         if order.amount <= 0:
             raise Exception("Order amount is 0!")
-
-        #print(order.amount)
 
         if order.buy:
             heapq.heappush(self.buybook, (-order.price, order.receiveTimestamp, order))
         else:
             heapq.heappush(self.sellbook, (order.price, order.receiveTimestamp, order))
 
+    # Function used to input an order into the order book, which will either match or result in the order being added
     def input(self, order: Order):
-        #if order.cancel:
-        #    print("Canceling order " + order.toString() + " / " + str(order.receiveTimestamp))
-        #else:
-        #if not order.cancel:
-        #    print("Adding order " + order.toString() + " / " + str(order.processTimestamp))
         self.lastUnqueueTime = order.receiveTimestamp
 
+        # If the order is a cancel request, try to find the order in the order book that it's trying to cancel, and remove that order from the book
         if order.cancel:
-            success: bool = False
             for o in self.sellbook:
                 order2: Order = o[2]
                 if order2.orderID == order.orderID:
                     order2.agent.canceledOrders += order2.amount
                     self.sellbook.remove(o)
-                    success = True
             
             for o in self.buybook:
                 order2: Order = o[2]
                 if order2.orderID == order.orderID:
                     order2.agent.canceledOrders += order2.amount
                     self.buybook.remove(o)
-                    success = True
-
-            #if not success:
-            #    print(order.orderID)
         else:
+            # The order is a regular order
             if order.agent is not None:
                 order.agent.sentOrders += order.amount
     
-            trades = self.matchOrder(order)
+            # Try to match the order with other orders in the order book
+            trades: list = self._matchOrder(order)
             for trade in trades:
+                # Process transactions (exchange of cash and shares) for all trades that were produced
                 if not (self.simulation is None):
                     trade.process() 
 
-                    #if abs(trade.price - self.price) > 10:
-                    #    print(str(self.price) + " " + str(trade.price))
-                    #    print(trade.buyOrder.toString())
-                    #    print(trade.sellOrder.toString())
-
+                    # The share's market price is defined here as the last trade's price
                     self.price = trade.price
+
                 self.trades.append(trade)
+
             self.lastOrder = order
+
+            # Add a new data point whenever a new order is submitted
             self.datapoints.append(DataPoint(self, order.processTimestamp))
-        #print(self.toString())
 
-    
-    def inputOrder(self, buyOrder: Order, sellOrder: Order, price: float, trades) -> bool:
-        if sellOrder.price <= buyOrder.price:
-            if sellOrder.amount > buyOrder.amount:
-                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.processTimestamp, sellOrder.processTimestamp)))
-                sellOrder.amount -= buyOrder.amount
-                buyOrder.amount = 0
-
-                if buyOrder.receiveTimestamp > sellOrder.receiveTimestamp:
-                    self._addOrder(sellOrder)
-
-                return buyOrder.receiveTimestamp > sellOrder.receiveTimestamp
-
-            elif sellOrder.amount == buyOrder.amount:
-                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.processTimestamp, sellOrder.processTimestamp)))
-                sellOrder.amount = 0
-                buyOrder.amount = 0
-
-                return True
-            else:
-                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, sellOrder.amount, max(buyOrder.processTimestamp, sellOrder.processTimestamp)))
-                buyOrder.amount -= sellOrder.amount
-                sellOrder.amount = 0
-
-                if buyOrder.receiveTimestamp < sellOrder.receiveTimestamp:
-                    self._addOrder(buyOrder)
-
-                return buyOrder.receiveTimestamp < sellOrder.receiveTimestamp
-        else:
-            self._addOrder(sellOrder)
-            self._addOrder(buyOrder)
-            return True   
-                
-    # read config file to define latency parameters
-
+    # Second function involved in processing orders
     # Takes in an order and tries to match it
-    # Create list of trade objects (buyer, seller, price, timestamp)
-    def matchOrder(self, order: Order) -> list: # try to comment
+    # Returns list of Trade objects, describing all trades that were generated
+    def _matchOrder(self, order: Order) -> list:
         trades: list = list()
-        if order.buy: 
+        if order.buy: # If the order is a buy order, look in the sell book for things to match with
             while order.amount > 0: 
                 if len(self.sellbook) > 0:
+                    # Removes the "best deal" sell order from the order book, to test if it can match
                     other = heapq.heappop(self.sellbook)[2]
-                    if self.inputOrder(order, other, other.price, trades):
+                    # Tries to match with the best deal. If the newly submitted order fully matches, stop looking for the next best deal.
+                    if self._inputOrder(order, other, other.price, trades):
                         break
-                else:
+                else: # If there are no orders in the sell book, add the order to the order book
                     self._addOrder(order)
                     break                
-        else:
+        else: # If the order is a sell order, look in the buy book for things to match with
             while order.amount > 0:
                 if len(self.buybook) > 0:
+                    # Removes the "best deal" buy order from the order book, to test if it can match
                     other = heapq.heappop(self.buybook)[2]
-                    if self.inputOrder(other, order, other.price, trades):
+                    # Tries to match with the best deal. If the newly submitted order fully matches, stop looking for the next best deal.
+                    if self._inputOrder(other, order, other.price, trades):
                         break
-                else:
+                else: # If there are no orders in the buy book, add the order to the order book
                     self._addOrder(order)
                     break
 
+        # Send information of the trade to every agent
         if not (self.simulation is None):
             self.simulation.broadcastTradeInfo(trades)
  
         return trades
+    
+    # Third function involved in processing orders
+    # This function operates in terms of the "buy order" and "sell order" instead of the "best deal" and "newly submitted" order
+    # Returns True when the newly submitted order has finished matching with the other orders to signal to stop trying to match the newly sumbitted order with other orders
+    def _inputOrder(self, buyOrder: Order, sellOrder: Order, price: float, trades) -> bool:
+        if sellOrder.price <= buyOrder.price: # Makes sure the best deal can actually match with the submitted order
+            if sellOrder.amount > buyOrder.amount: # The buy order "runs out" first
+                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.processTimestamp, sellOrder.processTimestamp)))
+                
+                # Reduce the sell order's amount by the number which matched
+                sellOrder.amount -= buyOrder.amount
+                # All the buy orders matched
+                buyOrder.amount = 0
+
+                # If the buy order is the newly submitted one, return the partially matched sell order to the order book (thus returning True)
+                if buyOrder.receiveTimestamp > sellOrder.receiveTimestamp:
+                    self._addOrder(sellOrder)
+
+                return buyOrder.receiveTimestamp > sellOrder.receiveTimestamp
+            elif sellOrder.amount == buyOrder.amount: # Both orders have perfectly match
+                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, buyOrder.amount, max(buyOrder.processTimestamp, sellOrder.processTimestamp)))
+                sellOrder.amount = 0
+                buyOrder.amount = 0
+
+                # There is no more matching to do
+                return True
+            else: # The sell order "runs out" first
+                trades.append(Trade(buyOrder.agent, sellOrder.agent, buyOrder, sellOrder, price, buyOrder.symbol, sellOrder.amount, max(buyOrder.processTimestamp, sellOrder.processTimestamp)))
+                
+                # Reduce the sell order's amount by the number which matched
+                buyOrder.amount -= sellOrder.amount
+                # All the buy orders matched
+                sellOrder.amount = 0
+
+                # If the sell order is the newly submitted one, return the partially matched sell order to the order book (thus returning True)
+                if buyOrder.receiveTimestamp < sellOrder.receiveTimestamp:
+                    self._addOrder(buyOrder)
+
+                return buyOrder.receiveTimestamp < sellOrder.receiveTimestamp
+
+        else: # If the best deal cannot match (prices are incompatible), add the best deal back to the order book (it had been removed previously), and add the submitted order too
+            self._addOrder(sellOrder)
+            self._addOrder(buyOrder)
+            return True   
 
     def toString(self) -> str:
         s = "Sell orders: \n"
@@ -203,6 +215,7 @@ class OrderBook:
 
         return s
 
+    # These are used for testing as an easy way to verify that the order book works as intended
     def _getBuyList(self) -> list:
         l = list()
         for order in self.buybook:
@@ -226,6 +239,7 @@ class OrderBook:
             l.append(trade.price)
         return l
 
+    # Plot price over time for a simulation
     def plotPrice(self):
         times = list()
         data = list()
@@ -238,8 +252,8 @@ class OrderBook:
         plot.xlabel("time")
         plot.ylabel("price")
         plot.plot(times, data)   
-        #plotf.candlestick_ohlc(times, data, width=25)
 
+    # Like the previous function, but uses a candlestick (open high low close) type plot, for a given time interval
     def plotPriceCandlestick(self, interval: float):
         data = list()
 
@@ -277,6 +291,7 @@ class OrderBook:
         ax.set_ylabel('price')
         plotf.candlestick_ohlc(ax, data)   
 
+    # Plots order book size (liquidity) over time for a simulation
     def plotBookSize(self):
         times = list()
         data = list()
@@ -290,6 +305,8 @@ class OrderBook:
         plot.ylabel("book size")
         plot.plot(times, data)   
 
+    # Plots order book price gap (bid-ask spread) over time for a simulation. 
+    # When one or more sides of the order book are empty, uses the last known gap.
     def plotGap(self):
         times = list()
         data = list()
@@ -307,6 +324,7 @@ class OrderBook:
         plot.ylabel("gap")
         plot.plot(times, data)   
 
+    # Plots order book queue (how many orders are waiting due to the simulation only processing one per time unit) size over time for a simulation.
     def plotQueueSize(self):
         times = list()
         data = list()
@@ -320,6 +338,8 @@ class OrderBook:
         plot.ylabel("queue size")
         plot.plot(times, data)   
 
+    # Plots volatility over time for a simulation. 
+    # Must run calculateVolatility() first
     def plotVolatility(self):
         times = list()
         data = list()
@@ -333,6 +353,8 @@ class OrderBook:
         plot.ylabel("volatility")
         plot.plot(times, data)   
 
+    # Plot all agent cash over time for a simulation
+    # Does not include agents whose name starts with "marketmaker"
     def plotBalances(self):
         times: list = list()
         data: dict = dict()
@@ -355,6 +377,8 @@ class OrderBook:
         for a in data:
             plot.plot(times, data[a])   
     
+    # Plot number of shares each agent has over time for a simulation
+    # Does not include agents whose name starts with "marketmaker"
     def plotShares(self):
         times: list = list()
         data: dict = dict()
@@ -377,6 +401,8 @@ class OrderBook:
         for a in data:
             plot.plot(times, data[a])   
 
+    # Plot net worth (# shares * value of share + total cash) each agent has over time for a simulation
+    # Does not include agents whose name starts with "marketmaker"
     def plotNetWorth(self):
         times: list = list()
         data: dict = dict()
@@ -399,6 +425,8 @@ class OrderBook:
         for a in data:
             plot.plot(times, data[a]) 
 
+    # Calculates volatility over time for prices, by calculating standard deviation of prices over the given time period
+    # Stores this in a "volatility" variable in the data points
     def calculateVolatility(self, time: float):
         index: int = 0
         for datapoint in self.datapoints:
@@ -417,6 +445,7 @@ class OrderBook:
             datapoint.volatility = numpy.std(price)
             index += 1
 
+    # Saves the data points of the simulation to a given file in CSV format
     def write(self, file: str):
         f = open(file, "w")
         bar: str = "Timestamp,Price,Book Size,Gap,Volatility,Queue Size"
@@ -449,6 +478,7 @@ class OrderBook:
 
         f.close()
     
+    # Saves simulation statistics to a given CSV format file
     def writeStats(self, file: str):
         f = open(file, "w")
         bar: str = "Agent,AveragePriceTraded,AveragePriceBuy,AveragePriceSell,OrdersSent,OrdersMatched,OrdersCanceled,OrdersStanding"
@@ -493,14 +523,15 @@ class OrderBook:
 
             f.write("\n")
 
+# A data point, which represents a snapshot of the order book at given time
 class DataPoint:
     def __init__(self, orderBook: OrderBook, timestamp: float):
-        self.price = orderBook.price
-        self.timestamp = timestamp
-        self.bookSize = 0
-        self.queueSize = timestamp - orderBook.lastUnqueueTime
-        self.agentBalances = dict()
-        self.agentShares = dict()
+        self.price: float = orderBook.price
+        self.timestamp: float = timestamp
+        self.bookSize: int = 0
+        self.queueSize: int = timestamp - orderBook.lastUnqueueTime
+        self.agentBalances: dict = dict()
+        self.agentShares: dict = dict()
         self.agentOrdersSent = dict()
         self.agentOrdersMatched = dict()
         self.agentOrdersCanceled = dict()
@@ -529,20 +560,11 @@ class DataPoint:
             heapq.heappush(orderBook.buybook, b)
 
             self.gap = (s[0] + b[0])
-            #if self.gap < 0:
-            #    #print(orderBook.prevDesc)
-            #    print(orderBook.toString())
-            #    print(orderBook.lastOrder.toString())
-            #    print(self.toString())
-            #    print(s[2].toString())
-            #    print(b[2].toString())
-                #raise Exception("gap is negative")
-        
-        #orderBook.previousDesc = orderBook.toString()
     
     def toString(self) -> str:
         return str(self.timestamp) + " data point: price = " + str(self.price) + ", book size = " + str(self.bookSize) + ", gap = " + str(self.gap)
 
+    # Each data point becomes one line in a CSV file
     def toCsvLine(self) -> str:
         s: str = str(self.timestamp) + "," + str(self.price) + "," + str(self.bookSize) + "," + str(self.gap) + "," + str(self.volatility) + "," + str(self.queueSize)
 
