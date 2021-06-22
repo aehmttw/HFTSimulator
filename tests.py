@@ -3,6 +3,8 @@ from simulation import Simulation
 from order import Order
 from orderbook import OrderBook
 
+# Tests to verify the matching engine is working correctly
+
 #python -m unittest discover
 class Tests(unittest.TestCase):
     def testBuy(self):

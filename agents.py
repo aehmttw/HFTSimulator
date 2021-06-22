@@ -55,6 +55,7 @@ class Agent:
     # The same json dictionary can define multiple identical agents - the index integer is used to differentiate them
 
     # Json properties for each agent: 
+    # count (int) - set to more than 1 to have multiple identical copies of the agent in the simulation (all copies will be grouped)
     # name (str) - the agent's name
     # balance (float) - how much cash this agent starts with
     # type (str) - the agent's type
