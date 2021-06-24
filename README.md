@@ -1,6 +1,6 @@
 # High-Frequency Trading Financial Exchange Simulator
 
-<br>This project is a discrete-event simulator for a financial exchange which takes latency into account. 
+This project is a discrete-event simulator for a financial exchange which takes latency into account. 
 The simulatior is agent-based, with each trader being an agent acting with their given strategies based on information that the agent has received from the exchange.
 Each agent can have a different latency function, which determines the time it takes information between the exchange and the agent.
 
@@ -11,11 +11,11 @@ Events are resolved in order of increasing time.
 
 ## Setting up the project
 
-<br>The simulator is written in Python 3.9. You'll need to have some libraries installed to run the code: pandas, numpy, matplotlib, random, heapq, multiprocessing, uuid, mpl_finance, json, and unittest.
+The simulator is written in Python 3.9. You'll need to have some libraries installed to run the code: pandas, numpy, matplotlib, random, heapq, multiprocessing, uuid, mpl_finance, json, and unittest.
 
 ## Running simulations
 
-<br>This program is intended to simulate multiple simulations with identical parameters, and then to analyze the results of all these runs together.
+This program is intended to simulate multiple simulations with identical parameters, and then to analyze the results of all these runs together.
 
 <br>Each setup configuration for simulations is stored in a JSON file as "simulation.json".  
 Some example configurations which you can run yourself are available in the "runs" folder. 
@@ -39,13 +39,13 @@ Then, run the file. The results should be printed to the console.
 
 ## More
 
-<br>This simulator was part of a greater project, which tried to determine the effects of Stale-Quote Arbitrage on markets. 
+This simulator was part of a greater project, which tried to determine the effects of Stale-Quote Arbitrage on markets. 
 You can view the presentation of this project [https://www.youtube.com/watch?v=Q8meom3nWlU](here) (there are three projects in the video - this simulator relates to the first of those projects). 
 You can also see the weekly blog for the project [https://siliconvalley.basisindependent.com/author/mateib/](here).
 
 ## Credits
 
-<br>Matei Budiu
+Matei Budiu
 <br>
 <br>Advisors:
 <br>Matthew McCorkle (High School Teacher at BASIS Independent Silicon Valley)
