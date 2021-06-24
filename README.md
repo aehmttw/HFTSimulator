@@ -40,8 +40,8 @@ Then, run the file. The results should be printed to the console.
 ## More
 
 This simulator was part of a greater project, which tried to determine the effects of Stale-Quote Arbitrage on markets. 
-You can view the presentation of this project [https://www.youtube.com/watch?v=Q8meom3nWlU](here) (there are three projects in the video - this simulator relates to the first of those projects). 
-You can also see the weekly blog for the project [https://siliconvalley.basisindependent.com/author/mateib/](here).
+You can view the presentation of this project [here](https://www.youtube.com/watch?v=Q8meom3nWlU) (there are three projects in the video - this simulator relates to the first of those projects). 
+You can also see the weekly blog for the project [here](https://siliconvalley.basisindependent.com/author/mateib/).
 
 ## Credits
 
