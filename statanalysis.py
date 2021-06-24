@@ -1,8 +1,5 @@
 import pandas as pd
-import matplotlib.pyplot as plotter
 import numpy as np
-import multiprocessing
-import sys
 
 # This class compiles and prints statistics from multiple runs of a given simulation, after they have all been run.
 class StatsAnalyzer:

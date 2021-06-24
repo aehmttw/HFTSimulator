@@ -1,4 +1,3 @@
-from os import system
 from events import *
 from agents import *
 import numpy as np

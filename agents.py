@@ -1,4 +1,3 @@
-from numpy import double
 from orderbook import *
 from order import *
 from events import *
@@ -426,7 +425,7 @@ class AlgorithmRandomNormal(Algorithm):
 # spread: float - spread of the distribution
 # quantitymin: int - minimum number of orders sent
 # quantitymax: int - maximum number of orders sent
-# buychance: double - from 0 to 1, chance to buy ([1 - this value] is the chance to sell)
+# buychance: float - from 0 to 1, chance to buy ([1 - this value] is the chance to sell)
 class AlgorithmRandomLogNormal(Algorithm):
     def __init__(self, agent: Agent, args: dict):
         super().__init__(agent)
@@ -607,8 +606,8 @@ class AlgorithmFundamentalMM(Algorithm):
 
         self.orders = list()
         for i in range(self.tickCount):
-            p: double = price + self.tickSpread * i + self.spread
-            p2: double = price - self.tickSpread * i - self.spread
+            p: float = price + self.tickSpread * i + self.spread
+            p2: float = price - self.tickSpread * i - self.spread
             #print(str(p) + " " + str(p2))
 
             if not hasBuy or p < bestbuy[2].price:

@@ -1,5 +1,5 @@
 .ipynb_checkpoints/
 __pycache__/
-runs/old/
-runs/
+archived/
+results/
 testplayground.ipynb

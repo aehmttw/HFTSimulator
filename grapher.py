@@ -180,7 +180,8 @@ def main():
 
     # You can choose which simulation to graph here
     simulationName = "3speedsqa"
-    g = Grapher("runs/" + simulationName + "/output", 100, 5000, limits)
+    simulationCount = 100
+    g = Grapher("runs/" + simulationName + "/output", simulationCount, 5000, limits)
     g.saveAllAvg()
 
 if __name__ == "__main__":
