@@ -9,8 +9,8 @@ Events are resolved in order of increasing time.
 
 <br>Several types of traders and strategies are available. Check the "agents.py" file for more detailed explanations of each one.
 
+<br>Below is an example net worth over time graph for a setup with stale quote arbitrage and zero intelligence traders.
 ![An output graph](outputdemo.png)
-An example net worth over time graph for a setup with stale quote arbitrage and zero intelligence traders.
 
 ## Setting up the project
 
