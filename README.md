@@ -9,6 +9,9 @@ Events are resolved in order of increasing time.
 
 <br>Several types of traders and strategies are available. Check the "agents.py" file for more detailed explanations of each one.
 
+![An output graph](outputdemo.png)
+An example net worth over time graph for a setup with stale quote arbitrage and zero intelligence traders.
+
 ## Setting up the project
 
 The simulator is written in Python 3.9. You'll need to have some libraries installed to run the code: pandas, numpy, matplotlib, random, heapq, multiprocessing, uuid, mpl_finance, json, and unittest.
