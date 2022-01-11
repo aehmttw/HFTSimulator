@@ -4,6 +4,8 @@ This project is a discrete-event simulator for a financial exchange which takes 
 The simulatior is agent-based, with each trader being an agent acting with their given strategies based on information that the agent has received from the exchange.
 Each agent can have a different latency function, which determines the time it takes information between the exchange and the agent.
 
+This simulator was used in several experiments outlined in ![this article]{Trick_or_Treat__The_Effects_of_High_Frequency_Trading_on_Financial_Markets.pdf}.
+
 <br>The simulator uses an event queue - events each have a time at which they are scheduled to happen, and the queue is sorted by each event's scheduled time.
 Events are resolved in order of increasing time.
 
